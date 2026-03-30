@@ -2,6 +2,14 @@ import { z } from "zod";
 
 import { shippingMethods } from "@/types";
 
+const emptyStringToUndefined = (value: unknown) => {
+  if (typeof value === "string" && value.trim().length === 0) {
+    return undefined;
+  }
+
+  return value;
+};
+
 export const cartLineInputSchema = z.object({
   productId: z.string().trim().min(1, "El item no tiene producto valido."),
   quantity: z
@@ -29,5 +37,8 @@ export const checkoutRequestSchema = shippingAddressSchema.extend({
   customerEmail: z.string().trim().email("Ingresa un email valido."),
   items: z.array(cartLineInputSchema).min(1, "Debes enviar al menos un item."),
   shippingMethod: z.enum(shippingMethods).optional(),
-  couponCode: z.string().trim().min(3).max(32).optional(),
+  couponCode: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().min(3).max(32).optional(),
+  ),
 });

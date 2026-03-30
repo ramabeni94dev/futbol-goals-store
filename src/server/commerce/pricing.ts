@@ -1,6 +1,8 @@
 import "server-only";
 
-import { PricingBreakdown, Product, ShippingMethod } from "@/types";
+import { calculateCommercialPricing } from "@/lib/commerce";
+import { Product, ShippingMethod } from "@/types";
+import { ValidationError } from "@/server/errors";
 
 interface PricingInputItem {
   product: Product;
@@ -10,23 +12,22 @@ interface PricingInputItem {
 export function calculateOrderPricing(input: {
   items: PricingInputItem[];
   shippingMethod: ShippingMethod;
-}): PricingBreakdown {
+  couponCode?: string | null;
+}) {
   const subtotal = input.items.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0,
   );
 
-  const shippingCost = 0;
-  const tax = 0;
-  const discount = 0;
-  const total = subtotal + shippingCost + tax - discount;
-
-  return {
-    currency: "ARS",
-    subtotal,
-    shippingCost,
-    tax,
-    discount,
-    total,
-  };
+  try {
+    return calculateCommercialPricing({
+      subtotal,
+      shippingMethod: input.shippingMethod,
+      couponCode: input.couponCode,
+    });
+  } catch (error) {
+    throw new ValidationError(
+      error instanceof Error ? error.message : "No se pudo calcular el precio del checkout.",
+    );
+  }
 }

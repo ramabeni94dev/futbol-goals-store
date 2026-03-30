@@ -99,6 +99,7 @@ export async function createAuthoritativeOrder(
     const pricing = calculateOrderPricing({
       items: orderItems,
       shippingMethod,
+      couponCode: checkout.couponCode ?? null,
     });
 
     orderItems.forEach(({ product, quantity }, index) => {
@@ -135,8 +136,8 @@ export async function createAuthoritativeOrder(
         postalCode: checkout.postalCode,
         notes: checkout.notes,
       },
-      couponCode: checkout.couponCode ?? null,
-      couponSnapshot: null,
+      couponCode: pricing.couponCode,
+      couponSnapshot: pricing.couponSnapshot,
       status: "awaiting_payment",
       paymentStatus: "pending",
       fulfillmentStatus: "unfulfilled",

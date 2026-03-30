@@ -24,6 +24,73 @@ function getMercadoPagoClient() {
   });
 }
 
+function buildMercadoPagoItems(order: Order) {
+  const orderItems = order.items.map((item) => ({
+    id: item.productId,
+    title: item.name,
+    description: `Arco de futbol ${item.name}`,
+    picture_url: item.image,
+    category_id: "sports",
+    quantity: item.quantity,
+    currency_id: order.currency,
+    unit_price: item.unitPrice,
+  }));
+
+  let remainingDiscount = order.discount;
+
+  const discountedItems = orderItems.map((item) => {
+    if (remainingDiscount <= 0) {
+      return item;
+    }
+
+    const lineTotal = item.unit_price * item.quantity;
+    const applicableDiscount = Math.min(lineTotal, remainingDiscount);
+    remainingDiscount -= applicableDiscount;
+
+    return {
+      ...item,
+      unit_price: Number(((lineTotal - applicableDiscount) / item.quantity).toFixed(2)),
+    };
+  });
+
+  if (remainingDiscount > 0) {
+    throw new ValidationError(
+      "El descuento comercial excede el subtotal y no puede enviarse a Mercado Pago.",
+      {
+        orderId: order.id,
+      },
+    );
+  }
+
+  if (order.shippingCost > 0) {
+    discountedItems.push({
+      id: `shipping-${order.shippingMethod}`,
+      title: order.shippingMethod === "pickup" ? "Retiro en deposito" : "Envio",
+      description: "Cargo logistico del pedido",
+      picture_url: "",
+      category_id: "shipping",
+      quantity: 1,
+      currency_id: order.currency,
+      unit_price: order.shippingCost,
+    });
+  }
+
+  if (order.tax > 0) {
+    discountedItems.push({
+      id: "tax",
+      title: "Impuestos",
+      description: "Impuestos aplicados al pedido",
+      picture_url: "",
+      category_id: "tax",
+      quantity: 1,
+      currency_id: order.currency,
+      unit_price: order.tax,
+    });
+  }
+
+  return discountedItems;
+}
+
 export async function createMercadoPagoPreference(order: Order) {
   const preferenceClient = new Preference(getMercadoPagoClient());
   const response = await preferenceClient.create({
@@ -40,19 +107,11 @@ export async function createMercadoPagoPreference(order: Order) {
         name: order.customerName,
         email: order.customerEmail,
       },
-      items: order.items.map((item) => ({
-        id: item.productId,
-        title: item.name,
-        description: `Arco de futbol ${item.name}`,
-        picture_url: item.image,
-        category_id: "sports",
-        quantity: item.quantity,
-        currency_id: order.currency,
-        unit_price: item.unitPrice,
-      })),
+      items: buildMercadoPagoItems(order),
       metadata: {
         orderId: order.id,
         userId: order.userId,
+        couponCode: order.couponCode,
       },
       statement_descriptor: "FUTBOL GOALS",
       binary_mode: false,

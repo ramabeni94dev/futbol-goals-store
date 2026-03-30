@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -13,6 +13,11 @@ import { AuthGuard } from "@/components/shared/auth-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  calculateCommercialPricing,
+  findCouponDefinition,
+  isFreeShippingEligible,
+} from "@/lib/commerce";
 import { formatCurrency } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
@@ -21,22 +26,22 @@ import { checkoutRequestSchema } from "@/validators/checkout";
 
 const checkoutSchema = checkoutRequestSchema.omit({
   items: true,
-  shippingMethod: true,
-  couponCode: true,
 });
 
-type CheckoutValues = z.infer<typeof checkoutSchema>;
+type CheckoutFormValues = z.input<typeof checkoutSchema>;
+type CheckoutFormOutput = z.output<typeof checkoutSchema>;
 
 function CheckoutInner() {
   const router = useRouter();
   const { user, profile } = useAuth();
-  const { items, subtotal, total, clearCart } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const {
+    control,
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CheckoutValues>({
+  } = useForm<CheckoutFormValues, undefined, CheckoutFormOutput>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       customerName: profile?.name ?? user?.displayName ?? "",
@@ -46,8 +51,37 @@ function CheckoutInner() {
       province: "",
       postalCode: "",
       notes: "",
+      shippingMethod: "pickup",
+      couponCode: "",
     },
   });
+  const watchedShippingMethod = useWatch({
+    control,
+    name: "shippingMethod",
+  });
+  const watchedCouponCode = useWatch({
+    control,
+    name: "couponCode",
+  });
+  const couponCodeValue =
+    typeof watchedCouponCode === "string" ? watchedCouponCode : undefined;
+  const pricingPreview = useMemo(() => {
+    try {
+      return calculateCommercialPricing({
+        subtotal,
+        shippingMethod: watchedShippingMethod ?? "pickup",
+        couponCode: couponCodeValue,
+      });
+    } catch {
+      return calculateCommercialPricing({
+        subtotal,
+        shippingMethod: "pickup",
+        couponCode: couponCodeValue,
+      });
+    }
+  }, [couponCodeValue, subtotal, watchedShippingMethod]);
+  const couponPreview = findCouponDefinition(couponCodeValue);
+  const freeShippingEligible = isFreeShippingEligible(subtotal);
 
   useEffect(() => {
     reset({
@@ -58,10 +92,12 @@ function CheckoutInner() {
       province: "",
       postalCode: "",
       notes: "",
+      shippingMethod: "pickup",
+      couponCode: "",
     });
   }, [profile?.email, profile?.name, reset, user?.displayName, user?.email]);
 
-  async function onSubmit(values: CheckoutValues) {
+  async function onSubmit(values: CheckoutFormOutput) {
     if (!user) {
       toast.error("Necesitas iniciar sesion para confirmar el pedido.");
       router.push("/login?redirect=/checkout");
@@ -78,25 +114,24 @@ function CheckoutInner() {
       const order = await createCheckoutOrder({
         token,
         payload: {
-        customerName: values.customerName,
-        customerEmail: values.customerEmail,
-        items: items.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-        })),
-        shippingMethod: "pickup",
-        street: values.street,
-        city: values.city,
-        province: values.province,
-        postalCode: values.postalCode,
-        notes: values.notes,
+          customerName: values.customerName,
+          customerEmail: values.customerEmail,
+          items: items.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+          })),
+          shippingMethod: values.shippingMethod,
+          couponCode: values.couponCode,
+          street: values.street,
+          city: values.city,
+          province: values.province,
+          postalCode: values.postalCode,
+          notes: values.notes,
         },
       });
 
       clearCart();
-      toast.success(
-        `Orden ${order.orderId.slice(0, 8)} creada con stock reservado.`,
-      );
+      toast.success(`Orden ${order.orderId.slice(0, 8)} creada con stock reservado.`);
 
       if (order.checkoutUrl) {
         window.location.assign(order.checkoutUrl);
@@ -205,6 +240,43 @@ function CheckoutInner() {
             {errors.notes ? <p className="text-sm text-rose-600">{errors.notes.message}</p> : null}
           </label>
 
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="block space-y-2">
+              <span className="text-sm font-semibold text-foreground">Metodo de entrega</span>
+              <select
+                className="h-12 w-full rounded-2xl border border-line bg-white/80 px-4 text-sm text-foreground outline-none transition focus:border-brand focus:bg-white"
+                {...register("shippingMethod")}
+              >
+                <option value="pickup">Retiro en deposito</option>
+                <option value="standard">Envio estandar</option>
+                {freeShippingEligible ? (
+                  <option value="free_shipping">Envio gratis</option>
+                ) : null}
+              </select>
+            </label>
+
+            <label className="block space-y-2">
+              <span className="text-sm font-semibold text-foreground">Cupon</span>
+              <Input
+                placeholder="CLUB10 o ARCO50000"
+                error={Boolean(errors.couponCode)}
+                {...register("couponCode")}
+              />
+              {couponPreview ? (
+                <p className="text-xs text-muted">
+                  {couponPreview.label}
+                  {couponPreview.minSubtotal
+                    ? ` - minimo ${formatCurrency(couponPreview.minSubtotal)}`
+                    : ""}
+                </p>
+              ) : couponCodeValue?.trim() ? (
+                <p className="text-xs text-muted">
+                  El codigo se valida en servidor al confirmar la orden.
+                </p>
+              ) : null}
+            </label>
+          </div>
+
           <Button fullWidth loading={isSubmitting} type="submit">
             Confirmar pedido
           </Button>
@@ -246,11 +318,27 @@ function CheckoutInner() {
           </div>
           <div className="flex items-center justify-between">
             <span>Envio</span>
-            <span className="font-semibold text-foreground">A coordinar</span>
+            <span className="font-semibold text-foreground">
+              {pricingPreview.shippingCost
+                ? formatCurrency(pricingPreview.shippingCost)
+                : pricingPreview.shippingLabel}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Impuestos</span>
+            <span className="font-semibold text-foreground">
+              {formatCurrency(pricingPreview.tax)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Descuento</span>
+            <span className="font-semibold text-foreground">
+              {pricingPreview.discount ? `- ${formatCurrency(pricingPreview.discount)}` : "-"}
+            </span>
           </div>
           <div className="flex items-center justify-between text-base font-bold text-foreground">
             <span>Total</span>
-            <span>{formatCurrency(total)}</span>
+            <span>{formatCurrency(pricingPreview.total)}</span>
           </div>
         </div>
       </aside>
