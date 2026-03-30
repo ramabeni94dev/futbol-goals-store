@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Manrope } from "next/font/google";
 import "./globals.css";
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
+import { AppProviders } from "@/components/providers/app-providers";
 import { siteConfig } from "@/config/site";
 
 const headingFont = Bebas_Neue({
@@ -32,7 +35,13 @@ export default function RootLayout({
       lang="es"
       className={`${headingFont.variable} ${bodyFont.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AppProviders>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </AppProviders>
+      </body>
     </html>
   );
 }
