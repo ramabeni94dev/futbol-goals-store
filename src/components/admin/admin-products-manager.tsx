@@ -10,6 +10,7 @@ import { removeProduct, seedProducts } from "@/services/products";
 import { Product } from "@/types";
 import { getCategoryLabel } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
+import { getAvailableStock } from "@/lib/inventory";
 
 export function AdminProductsManager() {
   const { products, loading, error, reload } = useProducts();
@@ -129,7 +130,9 @@ export function AdminProductsManager() {
                       {getCategoryLabel(product.category)}
                     </span>
                     <span className="rounded-full bg-background px-3 py-1">{product.size}</span>
-                    <span className="rounded-full bg-background px-3 py-1">Stock {product.stock}</span>
+                    <span className="rounded-full bg-background px-3 py-1">
+                      Stock {getAvailableStock(product)}
+                    </span>
                   </div>
                 </div>
 

@@ -8,6 +8,7 @@ import { AddToCartButton } from "@/components/shop/add-to-cart-button";
 import { ProductGallery } from "@/components/shop/product-gallery";
 import { getCategoryLabel } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
+import { getAvailableStock } from "@/lib/inventory";
 import { getProductBySlug } from "@/services/products";
 import { Product } from "@/types";
 
@@ -59,6 +60,8 @@ export function ProductDetailView({ slug }: { slug: string }) {
     );
   }
 
+  const availableStock = getAvailableStock(product);
+
   return (
     <div className="page-shell section-shell space-y-8">
       <div className="flex items-center gap-2 text-sm text-muted">
@@ -96,7 +99,9 @@ export function ProductDetailView({ slug }: { slug: string }) {
             <p className="mt-2 text-4xl font-black text-foreground">
               {formatCurrency(product.price)}
             </p>
-            <p className="mt-4 text-sm text-muted">Stock disponible: {product.stock} unidades</p>
+            <p className="mt-4 text-sm text-muted">
+              Stock disponible: {availableStock} unidades
+            </p>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">

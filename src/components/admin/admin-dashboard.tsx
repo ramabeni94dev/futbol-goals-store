@@ -78,7 +78,12 @@ export function AdminDashboard() {
             Pendientes
           </p>
           <p className="mt-4 text-4xl font-black text-foreground">
-            {loadingOrders ? "..." : orders.filter((order) => order.status === "pending").length}
+            {loadingOrders
+              ? "..."
+              : orders.filter(
+                  (order) =>
+                    order.status === "pending" || order.status === "awaiting_payment",
+                ).length}
           </p>
         </div>
       </section>

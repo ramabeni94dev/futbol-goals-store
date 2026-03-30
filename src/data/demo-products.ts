@@ -13,6 +13,7 @@ export const demoProducts: Product[] = [
     category: "professional",
     size: "7,32 x 2,44 m",
     stock: 6,
+    reservedStock: 0,
     images: ["/products/goal-11-soldado-3.svg", "/products/stadium-angle.svg"],
     featured: true,
     technicalSpecs: [
@@ -21,7 +22,10 @@ export const demoProducts: Product[] = [
       { label: "Terminacion", value: "Pintura poliester horneada" },
       { label: "Incluye", value: "Ganchos y tensores para red" },
     ],
+    trackInventory: true,
+    isActive: true,
     createdAt: "2026-03-30T12:00:00.000Z",
+    updatedAt: "2026-03-30T12:00:00.000Z",
   },
   {
     id: "arco-infantil-reforzado",
@@ -35,6 +39,7 @@ export const demoProducts: Product[] = [
     category: "kids",
     size: "3 x 2 m",
     stock: 15,
+    reservedStock: 0,
     images: ["/products/goal-kids-reinforced.svg", "/products/goal-training-portable.svg"],
     featured: true,
     technicalSpecs: [
@@ -43,7 +48,10 @@ export const demoProducts: Product[] = [
       { label: "Uso", value: "Escuelas, plazas y clubes de barrio" },
       { label: "Movilidad", value: "Traslado sencillo entre canchas" },
     ],
+    trackInventory: true,
+    isActive: true,
     createdAt: "2026-03-29T12:00:00.000Z",
+    updatedAt: "2026-03-29T12:00:00.000Z",
   },
   {
     id: "arco-entrenamiento-desarmable",
@@ -57,6 +65,7 @@ export const demoProducts: Product[] = [
     category: "training",
     size: "2,40 x 1,60 m",
     stock: 20,
+    reservedStock: 0,
     images: ["/products/goal-training-portable.svg", "/products/training-session.svg"],
     featured: false,
     technicalSpecs: [
@@ -65,7 +74,10 @@ export const demoProducts: Product[] = [
       { label: "Peso", value: "18 kg por unidad" },
       { label: "Incluye", value: "Bolso de traslado y estacas" },
     ],
+    trackInventory: true,
+    isActive: true,
     createdAt: "2026-03-28T12:00:00.000Z",
+    updatedAt: "2026-03-28T12:00:00.000Z",
   },
   {
     id: "arco-profesional-con-red",
@@ -79,6 +91,7 @@ export const demoProducts: Product[] = [
     category: "professional",
     size: "5 x 2 m",
     stock: 8,
+    reservedStock: 0,
     images: ["/products/goal-professional-net.svg", "/products/stadium-angle.svg"],
     featured: true,
     technicalSpecs: [
@@ -87,7 +100,10 @@ export const demoProducts: Product[] = [
       { label: "Acabado", value: "Galvanizado mas pintura electrostatica" },
       { label: "Aplicacion", value: "Clubes, academias y canchas privadas" },
     ],
+    trackInventory: true,
+    isActive: true,
     createdAt: "2026-03-27T12:00:00.000Z",
+    updatedAt: "2026-03-27T12:00:00.000Z",
   },
   {
     id: "mini-arco-para-practica",
@@ -101,6 +117,7 @@ export const demoProducts: Product[] = [
     category: "mini",
     size: "1,20 x 0,80 m",
     stock: 30,
+    reservedStock: 0,
     images: ["/products/goal-mini-practice.svg", "/products/training-session.svg"],
     featured: false,
     technicalSpecs: [
@@ -109,6 +126,9 @@ export const demoProducts: Product[] = [
       { label: "Uso", value: "Practica individual e indoor" },
       { label: "Montaje", value: "Armado rapido sin herramientas" },
     ],
+    trackInventory: true,
+    isActive: true,
     createdAt: "2026-03-26T12:00:00.000Z",
+    updatedAt: "2026-03-26T12:00:00.000Z",
   },
 ];

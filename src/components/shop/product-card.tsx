@@ -5,9 +5,12 @@ import { ArrowUpRight, ShieldCheck, PackageCheck } from "lucide-react";
 import { AddToCartButton } from "@/components/shop/add-to-cart-button";
 import { getCategoryLabel } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
+import { getAvailableStock } from "@/lib/inventory";
 import { Product } from "@/types";
 
 export function ProductCard({ product }: { product: Product }) {
+  const availableStock = getAvailableStock(product);
+
   return (
     <article className="surface-card overflow-hidden transition duration-300 hover:-translate-y-1">
       <div className="relative h-64 overflow-hidden">
@@ -36,7 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="flex flex-wrap gap-3 text-xs font-semibold text-muted">
           <span className="inline-flex items-center gap-2 rounded-full bg-background px-3 py-2">
             <PackageCheck className="size-4 text-brand" />
-            Stock {product.stock}
+            Stock {availableStock}
           </span>
           <span className="inline-flex items-center gap-2 rounded-full bg-background px-3 py-2">
             <ShieldCheck className="size-4 text-accent" />

@@ -1,7 +1,7 @@
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import { db } from "@/lib/firebase/config";
-import { normalizeDate } from "@/lib/utils";
+import { mapUserProfileRecord } from "@/lib/serializers/user";
 import { UserProfile, UserRole } from "@/types";
 
 const COLLECTION_NAME = "users";
@@ -11,6 +11,7 @@ export async function ensureUserProfile(input: {
   name: string;
   email: string;
   role?: UserRole;
+  emailVerified?: boolean;
 }) {
   const database = db;
 
@@ -25,6 +26,7 @@ export async function ensureUserProfile(input: {
       name: input.name,
       email: input.email,
       role: input.role ?? "customer",
+      emailVerified: input.emailVerified ?? false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     },
@@ -44,13 +46,8 @@ export async function getUserProfile(uid: string) {
     return null;
   }
 
-  const data = snapshot.data() as Partial<UserProfile> & { createdAt?: unknown };
-
-  return {
-    uid: data.uid ?? uid,
-    name: data.name ?? "",
-    email: data.email ?? "",
-    role: data.role ?? "customer",
-    createdAt: normalizeDate(data.createdAt),
-  } satisfies UserProfile;
+  return mapUserProfileRecord(
+    uid,
+    snapshot.data() as Partial<UserProfile> & { createdAt?: unknown; updatedAt?: unknown },
+  );
 }

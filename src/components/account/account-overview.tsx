@@ -3,35 +3,10 @@
 import { useEffect, useState } from "react";
 
 import { formatCurrency, formatOrderDate } from "@/lib/format";
+import { getOrderStatusClassName, getOrderStatusLabel } from "@/lib/orders";
 import { useAuth } from "@/hooks/use-auth";
 import { getOrdersByUser } from "@/services/orders";
 import { Order } from "@/types";
-
-function statusLabel(status: Order["status"]) {
-  switch (status) {
-    case "completed":
-      return "Completado";
-    case "processing":
-      return "En proceso";
-    case "cancelled":
-      return "Cancelado";
-    default:
-      return "Pendiente";
-  }
-}
-
-function statusClassName(status: Order["status"]) {
-  switch (status) {
-    case "completed":
-      return "bg-emerald-100 text-emerald-800";
-    case "processing":
-      return "bg-sky-100 text-sky-800";
-    case "cancelled":
-      return "bg-rose-100 text-rose-700";
-    default:
-      return "bg-amber-100 text-amber-800";
-  }
-}
 
 export function AccountOverview() {
   const { user, profile } = useAuth();
@@ -122,9 +97,9 @@ export function AccountOverview() {
                     <p className="mt-1 text-sm text-muted">{formatOrderDate(order.createdAt)}</p>
                   </div>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${statusClassName(order.status)}`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${getOrderStatusClassName(order.status)}`}
                   >
-                    {statusLabel(order.status)}
+                    {getOrderStatusLabel(order.status)}
                   </span>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">

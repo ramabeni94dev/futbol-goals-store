@@ -17,15 +17,12 @@ import { formatCurrency } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { createOrder } from "@/services/orders";
+import { checkoutRequestSchema } from "@/validators/checkout";
 
-const checkoutSchema = z.object({
-  customerName: z.string().min(2, "Ingresa el nombre del comprador."),
-  customerEmail: z.email("Ingresa un email valido."),
-  street: z.string().min(4, "Ingresa la direccion de entrega."),
-  city: z.string().min(2, "Ingresa la ciudad."),
-  province: z.string().min(2, "Ingresa la provincia."),
-  postalCode: z.string().min(3, "Ingresa el codigo postal."),
-  notes: z.string().max(300, "El detalle adicional es demasiado largo.").optional(),
+const checkoutSchema = checkoutRequestSchema.omit({
+  items: true,
+  shippingMethod: true,
+  couponCode: true,
 });
 
 type CheckoutValues = z.infer<typeof checkoutSchema>;
@@ -83,19 +80,14 @@ function CheckoutInner() {
         customerEmail: values.customerEmail,
         items: items.map((item) => ({
           productId: item.product.id,
-          name: item.product.name,
-          price: item.product.price,
           quantity: item.quantity,
-          image: item.product.images[0],
         })),
-        total,
-        shippingAddress: {
-          street: values.street,
-          city: values.city,
-          province: values.province,
-          postalCode: values.postalCode,
-          notes: values.notes,
-        },
+        shippingMethod: "pickup",
+        street: values.street,
+        city: values.city,
+        province: values.province,
+        postalCode: values.postalCode,
+        notes: values.notes,
       });
 
       clearCart();
@@ -137,8 +129,9 @@ function CheckoutInner() {
           Confirmar compra
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-          El pedido se guardara en Firestore con estado inicial pendiente y quedara
-          asociado al usuario autenticado.
+          El pedido se guarda con el modelo de dominio nuevo y queda asociado al
+          usuario autenticado. En la siguiente fase pasara por un flujo server-side
+          autoritativo.
         </p>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>

@@ -12,32 +12,11 @@ import {
 } from "firebase/firestore";
 
 import { demoProducts } from "@/data/demo-products";
+import { mapProductRecord } from "@/lib/serializers/product";
 import { db } from "@/lib/firebase/config";
-import { normalizeDate } from "@/lib/utils";
 import { Product, ProductInput } from "@/types";
 
 const COLLECTION_NAME = "products";
-
-function mapProduct(
-  id: string,
-  payload: Partial<Product> & { createdAt?: unknown },
-): Product {
-  return {
-    id,
-    name: payload.name ?? "",
-    slug: payload.slug ?? "",
-    description: payload.description ?? "",
-    shortDescription: payload.shortDescription ?? "",
-    price: Number(payload.price ?? 0),
-    category: payload.category ?? "training",
-    size: payload.size ?? "",
-    stock: Number(payload.stock ?? 0),
-    images: payload.images ?? [],
-    featured: Boolean(payload.featured),
-    technicalSpecs: payload.technicalSpecs ?? [],
-    createdAt: normalizeDate(payload.createdAt),
-  };
-}
 
 export async function getProducts() {
   const database = db;
@@ -55,9 +34,7 @@ export async function getProducts() {
       return demoProducts;
     }
 
-    return snapshot.docs.map((entry) =>
-      mapProduct(entry.id, entry.data() as Partial<Product>),
-    );
+    return snapshot.docs.map((entry) => mapProductRecord(entry.id, entry.data() as Partial<Product>));
   } catch (error) {
     console.error("Unable to load products from Firestore", error);
     return demoProducts;
@@ -86,7 +63,7 @@ export async function getProductById(productId: string) {
     return null;
   }
 
-  return mapProduct(snapshot.id, snapshot.data() as Partial<Product>);
+  return mapProductRecord(snapshot.id, snapshot.data() as Partial<Product>);
 }
 
 export async function upsertProduct(product: ProductInput) {
@@ -100,6 +77,9 @@ export async function upsertProduct(product: ProductInput) {
     const { id, ...data } = product;
     await updateDoc(doc(database, COLLECTION_NAME, id), {
       ...data,
+      reservedStock: data.reservedStock ?? 0,
+      trackInventory: data.trackInventory ?? true,
+      isActive: data.isActive ?? true,
       updatedAt: serverTimestamp(),
     });
 
@@ -108,6 +88,9 @@ export async function upsertProduct(product: ProductInput) {
 
   const productRef = await addDoc(collection(database, COLLECTION_NAME), {
     ...product,
+    reservedStock: product.reservedStock ?? 0,
+    trackInventory: product.trackInventory ?? true,
+    isActive: product.isActive ?? true,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -148,9 +131,12 @@ export async function seedProducts() {
         category: product.category,
         size: product.size,
         stock: product.stock,
+        reservedStock: product.reservedStock,
         images: product.images,
         featured: product.featured,
         technicalSpecs: product.technicalSpecs,
+        trackInventory: product.trackInventory,
+        isActive: product.isActive,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       }),
