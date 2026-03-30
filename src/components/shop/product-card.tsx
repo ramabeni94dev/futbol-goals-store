@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ShieldCheck, PackageCheck } from "lucide-react";
 
+import { AddToCartButton } from "@/components/shop/add-to-cart-button";
 import { formatCurrency } from "@/lib/format";
 import { Product } from "@/types";
 
@@ -40,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
               Precio
@@ -50,13 +51,16 @@ export function ProductCard({ product }: { product: Product }) {
             </p>
           </div>
 
-          <Link
-            href={`/shop/${product.slug}`}
-            className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-strong"
-          >
-            Ver detalle
-            <ArrowUpRight className="size-4" />
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <AddToCartButton product={product} />
+            <Link
+              href={`/shop/${product.slug}`}
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-white/70 px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-white"
+            >
+              Ver detalle
+              <ArrowUpRight className="size-4" />
+            </Link>
+          </div>
         </div>
       </div>
     </article>

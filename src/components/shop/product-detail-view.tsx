@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronRight, ShieldCheck, Truck } from "lucide-react";
 
+import { AddToCartButton } from "@/components/shop/add-to-cart-button";
 import { ProductGallery } from "@/components/shop/product-gallery";
-import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
 import { getProductBySlug } from "@/services/products";
 import { Product } from "@/types";
@@ -97,7 +97,7 @@ export function ProductDetailView({ slug }: { slug: string }) {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button className="min-w-[220px]">Agregar al carrito</Button>
+            <AddToCartButton product={product} />
             <Link
               href="/checkout"
               className="inline-flex min-w-[220px] items-center justify-center rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-white"

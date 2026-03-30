@@ -5,9 +5,11 @@ import { LogOut, ShieldCheck, ShoppingCart, UserRound } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
 
 export function Navbar() {
   const { user, profile, isAdmin, logout, loading } = useAuth();
+  const { itemCount } = useCart();
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-background/85 backdrop-blur-xl">
@@ -41,6 +43,9 @@ export function Navbar() {
           >
             <ShoppingCart className="size-4" />
             <span>Carrito</span>
+            <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-brand px-2 py-1 text-xs text-white">
+              {itemCount}
+            </span>
           </Link>
 
           {loading ? (
