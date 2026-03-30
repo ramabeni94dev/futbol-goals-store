@@ -9,6 +9,7 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     let ignore = false;
@@ -40,7 +41,12 @@ export function useProducts() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [reloadToken]);
 
-  return { products, loading, error };
+  return {
+    products,
+    loading,
+    error,
+    reload: () => setReloadToken((current) => current + 1),
+  };
 }
