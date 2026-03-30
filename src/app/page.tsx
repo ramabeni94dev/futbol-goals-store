@@ -125,6 +125,26 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <section className="page-shell section-shell">
+        <SectionHeading
+          eyebrow="Confianza"
+          title="Informacion clara antes de pagar"
+          description="La tienda publica condiciones de envio, devoluciones, medios de pago y politicas para reducir friccion comercial y mejorar conversion."
+        />
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {siteConfig.trustLinks.map((item) => (
+            <Link key={item.href} href={item.href} className="surface-card p-6 transition hover:-translate-y-0.5">
+              <p className="text-lg font-bold text-foreground">{item.label}</p>
+              <p className="mt-3 text-sm leading-7 text-muted">
+                Ver informacion comercial y operativa relevante antes de confirmar la
+                compra.
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

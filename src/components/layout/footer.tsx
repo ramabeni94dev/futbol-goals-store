@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/site";
 export function Footer() {
   return (
     <footer className="border-t border-line/80 bg-white/60">
-      <div className="page-shell grid gap-10 py-10 md:grid-cols-[1.3fr_0.7fr_0.7fr]">
+      <div className="page-shell grid gap-10 py-10 md:grid-cols-[1.2fr_0.6fr_0.7fr_0.8fr]">
         <div>
           <p className="font-heading text-3xl uppercase tracking-[0.18em] text-foreground">
             {siteConfig.name}
@@ -35,12 +35,29 @@ export function Footer() {
 
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.24em] text-foreground">
+            Confianza
+          </p>
+          <div className="mt-4 flex flex-col gap-3 text-sm text-muted">
+            {siteConfig.trustLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="transition hover:text-foreground">
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-foreground">
             Contacto
           </p>
           <div className="mt-4 space-y-3 text-sm text-muted">
             <p>{siteConfig.supportEmail}</p>
-            <p>Envios coordinados para todo el pais</p>
-            <p>Deploy ready para Vercel + Firebase</p>
+            <p>Mercado Pago + checkout validado en servidor</p>
+            {siteConfig.legalLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="block transition hover:text-foreground">
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
