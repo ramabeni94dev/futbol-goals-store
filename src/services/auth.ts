@@ -1,6 +1,9 @@
 import {
+  GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   updateProfile,
 } from "firebase/auth";
@@ -25,6 +28,14 @@ function fallbackNameFromEmail(email: string) {
     .join(" ");
 }
 
+function getGoogleProvider() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: "select_account",
+  });
+  return provider;
+}
+
 export async function loginWithEmail(input: { email: string; password: string }) {
   const authInstance = assertAuth();
   const credentials = await signInWithEmailAndPassword(
@@ -40,6 +51,25 @@ export async function loginWithEmail(input: { email: string; password: string })
       uid: credentials.user.uid,
       name: credentials.user.displayName ?? fallbackNameFromEmail(input.email),
       email: input.email,
+    });
+  }
+
+  return credentials.user;
+}
+
+export async function loginWithGoogle() {
+  const authInstance = assertAuth();
+  const credentials = await signInWithPopup(authInstance, getGoogleProvider());
+  const email = credentials.user.email ?? "";
+  const profile = await getUserProfile(credentials.user.uid);
+
+  if (!profile) {
+    await ensureUserProfile({
+      uid: credentials.user.uid,
+      name:
+        credentials.user.displayName ??
+        fallbackNameFromEmail(email || "usuario@gmail.com"),
+      email,
     });
   }
 
@@ -74,4 +104,21 @@ export async function registerWithEmail(input: {
 export async function logoutUser() {
   const authInstance = assertAuth();
   await signOut(authInstance);
+}
+
+export async function requestPasswordReset(input: {
+  email: string;
+  continueUrl?: string;
+}) {
+  const authInstance = assertAuth();
+  const continueUrl =
+    input.continueUrl ||
+    (typeof window !== "undefined"
+      ? `${window.location.origin}/login`
+      : "http://localhost:3000/login");
+
+  await sendPasswordResetEmail(authInstance, input.email, {
+    url: continueUrl,
+    handleCodeInApp: false,
+  });
 }

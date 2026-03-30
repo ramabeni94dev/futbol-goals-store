@@ -36,3 +36,7 @@ export { firebaseApp };
 export const auth = firebaseApp ? getAuth(firebaseApp) : null;
 export const db = firebaseApp ? getFirestore(firebaseApp) : null;
 export const storage = firebaseApp ? getStorage(firebaseApp) : null;
+
+if (auth) {
+  auth.languageCode = "es";
+}

@@ -4,7 +4,13 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { createContext, ReactNode, useEffect, useState } from "react";
 
 import { auth, isFirebaseConfigured } from "@/lib/firebase/config";
-import { loginWithEmail, logoutUser, registerWithEmail } from "@/services/auth";
+import {
+  loginWithEmail,
+  loginWithGoogle,
+  logoutUser,
+  registerWithEmail,
+  requestPasswordReset,
+} from "@/services/auth";
 import { getUserProfile } from "@/services/users";
 import { UserProfile } from "@/types";
 
@@ -15,7 +21,9 @@ interface AuthContextValue {
   firebaseEnabled: boolean;
   isAdmin: boolean;
   login: (input: { email: string; password: string }) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   register: (input: { name: string; email: string; password: string }) => Promise<void>;
+  requestPasswordReset: (input: { email: string; continueUrl?: string }) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -74,6 +82,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(currentProfile);
   }
 
+  async function signInWithGoogle() {
+    const signedUser = await loginWithGoogle();
+    const currentProfile = await getUserProfile(signedUser.uid);
+    setUser(signedUser);
+    setProfile(currentProfile);
+  }
+
+  async function sendPasswordReset(input: { email: string; continueUrl?: string }) {
+    await requestPasswordReset(input);
+  }
+
   async function logout() {
     await logoutUser();
     setProfile(null);
@@ -88,7 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firebaseEnabled,
         isAdmin: profile?.role === "admin",
         login,
+        loginWithGoogle: signInWithGoogle,
         register,
+        requestPasswordReset: sendPasswordReset,
         logout,
         refreshProfile,
       }}

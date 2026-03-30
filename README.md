@@ -21,6 +21,8 @@ Ecommerce de arcos de futbol construido con Next.js 16, App Router, Tailwind CSS
 - Detalle `/shop/[slug]` con galeria, ficha tecnica y CTA de compra
 - Carrito `/cart` con persistencia local y control de cantidades
 - Registro, login, logout y cuenta de usuario
+- Login con Google
+- Recupero de contrasena por email
 - Checkout protegido con guardado de ordenes en Firestore
 - Panel admin `/admin` con dashboard, CRUD de productos, seed demo, upload de imagenes y vista de ordenes
 - Reglas iniciales para Firestore y Storage
@@ -32,6 +34,7 @@ Ecommerce de arcos de futbol construido con Next.js 16, App Router, Tailwind CSS
 - `/shop/[slug]`
 - `/cart`
 - `/checkout`
+- `/forgot-password`
 - `/login`
 - `/register`
 - `/account`
@@ -71,7 +74,7 @@ npm run build
 ## Configuracion de Firebase
 
 1. Crea un proyecto en Firebase.
-2. Habilita Authentication con proveedor Email/Password.
+2. Habilita Authentication con proveedores Email/Password y Google.
 3. Crea una app web y copia sus credenciales en `.env.local`.
 4. Crea Firestore Database en modo production.
 5. Crea Firebase Storage.
@@ -92,6 +95,14 @@ firebase deploy --only firestore:rules,firestore:indexes,storage
   "createdAt": "serverTimestamp"
 }
 ```
+
+8. Personaliza la plantilla del mail de recuperacion en Firebase Console:
+
+- Authentication
+- Templates
+- Password reset
+
+Desde ahi puedes ajustar asunto, remitente y branding del correo para un resultado mas profesional.
 
 ## Seed demo
 

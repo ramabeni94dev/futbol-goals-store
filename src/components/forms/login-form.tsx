@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { GoogleSignInButton } from "@/components/forms/google-sign-in-button";
 import { FirebaseDisabledMessage } from "@/components/shared/firebase-disabled-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +62,17 @@ export function LoginForm() {
         </div>
       ) : null}
 
-      <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      <div className="mt-8">
+        <GoogleSignInButton label="Ingresar con Google" />
+      </div>
+
+      <div className="mt-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
+        <span className="h-px flex-1 bg-line" />
+        o con email
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <form className="mt-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
         <label className="block space-y-2">
           <span className="text-sm font-semibold text-foreground">Email</span>
           <Input
@@ -85,6 +96,12 @@ export function LoginForm() {
             <p className="text-sm text-rose-600">{errors.password.message}</p>
           ) : null}
         </label>
+
+        <div className="flex justify-end">
+          <Link href="/forgot-password" className="text-sm font-semibold text-brand">
+            Olvide mi contrasena
+          </Link>
+        </div>
 
         <Button fullWidth loading={isSubmitting} disabled={!firebaseEnabled} type="submit">
           Iniciar sesion
