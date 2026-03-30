@@ -152,7 +152,14 @@ export async function requestPasswordReset(input: {
   });
 }
 
-export async function requestEmailVerification() {
+export async function requestEmailVerification(input?: { token?: string }) {
+  if (input?.token) {
+    await postAuthAction("/api/auth/email-verification", {
+      token: input.token,
+    });
+    return;
+  }
+
   const authInstance = assertAuth();
   const currentUser = authInstance.currentUser;
 

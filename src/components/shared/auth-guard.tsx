@@ -19,10 +19,6 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     }
   }, [firebaseEnabled, loading, pathname, router, user]);
 
-  if (!firebaseEnabled) {
-    return <FirebaseDisabledMessage />;
-  }
-
   if (loading) {
     return (
       <PageLoader
@@ -30,6 +26,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
         description="Chequeando credenciales y permisos del usuario."
       />
     );
+  }
+
+  if (!firebaseEnabled) {
+    return <FirebaseDisabledMessage />;
   }
 
   if (!user) {

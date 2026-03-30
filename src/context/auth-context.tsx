@@ -15,6 +15,8 @@ import {
 import { ensureUserProfile, getUserProfile } from "@/services/users";
 import { UserProfile } from "@/types";
 
+const E2E_STORAGE_KEY = "futbol-goals-store-e2e-session";
+
 interface AuthContextValue {
   user: User | null;
   profile: UserProfile | null;
@@ -34,13 +36,72 @@ interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const firebaseEnabled = isFirebaseConfigured();
+  const e2eBypassEnabled = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === "true";
+  const [mockSessionEnabled, setMockSessionEnabled] = useState(false);
+  const firebaseEnabled = isFirebaseConfigured() || e2eBypassEnabled || mockSessionEnabled;
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(firebaseEnabled);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!firebaseEnabled || !auth) {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    function loadMockSession() {
+      const rawValue = window.localStorage.getItem(E2E_STORAGE_KEY);
+
+      if (!rawValue) {
+        setMockSessionEnabled(false);
+        setUser(null);
+        setProfile(null);
+        if (!isFirebaseConfigured() || e2eBypassEnabled) {
+          setLoading(false);
+        }
+        return;
+      }
+
+      const session = JSON.parse(rawValue) as {
+        uid: string;
+        email: string;
+        displayName: string;
+        role: "admin" | "customer";
+        emailVerified: boolean;
+      };
+
+      const mockUser = {
+        uid: session.uid,
+        email: session.email,
+        displayName: session.displayName,
+        emailVerified: session.emailVerified,
+        getIdToken: async () => "e2e-token",
+        reload: async () => undefined,
+      } as User;
+
+      setMockSessionEnabled(true);
+      setUser(mockUser);
+      setProfile({
+        uid: session.uid,
+        name: session.displayName,
+        email: session.email,
+        role: session.role,
+        emailVerified: session.emailVerified,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      setLoading(false);
+    }
+
+    loadMockSession();
+    window.addEventListener("storage", loadMockSession);
+
+    return () => {
+      window.removeEventListener("storage", loadMockSession);
+    };
+  }, [e2eBypassEnabled]);
+
+  useEffect(() => {
+    if (!firebaseEnabled || !auth || mockSessionEnabled) {
       return;
     }
 
@@ -66,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [firebaseEnabled]);
+  }, [firebaseEnabled, mockSessionEnabled]);
 
   async function refreshProfile() {
     if (!user) {
@@ -104,7 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function sendEmailVerification() {
-    await requestEmailVerification();
+    if (!user) {
+      throw new Error("Necesitas una sesion activa para reenviar la verificacion.");
+    }
+
+    await requestEmailVerification({
+      token: await user.getIdToken(),
+    });
     await refreshProfile();
   }
 

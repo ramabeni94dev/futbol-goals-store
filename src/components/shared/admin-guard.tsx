@@ -20,18 +20,18 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     }
   }, [firebaseEnabled, loading, pathname, router, user]);
 
-  if (!firebaseEnabled) {
-    return (
-      <FirebaseDisabledMessage title="Configura Firebase para habilitar el panel admin" />
-    );
-  }
-
   if (loading) {
     return (
       <PageLoader
         title="Validando acceso admin"
         description="Comprobando autenticacion y rol del usuario."
       />
+    );
+  }
+
+  if (!firebaseEnabled) {
+    return (
+      <FirebaseDisabledMessage title="Configura Firebase para habilitar el panel admin" />
     );
   }
 
