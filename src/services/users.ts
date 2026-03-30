@@ -12,12 +12,14 @@ export async function ensureUserProfile(input: {
   email: string;
   role?: UserRole;
 }) {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     throw new Error("Firebase no esta configurado. Carga las variables de entorno.");
   }
 
   await setDoc(
-    doc(db, COLLECTION_NAME, input.uid),
+    doc(database, COLLECTION_NAME, input.uid),
     {
       uid: input.uid,
       name: input.name,
@@ -31,11 +33,13 @@ export async function ensureUserProfile(input: {
 }
 
 export async function getUserProfile(uid: string) {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     return null;
   }
 
-  const snapshot = await getDoc(doc(db, COLLECTION_NAME, uid));
+  const snapshot = await getDoc(doc(database, COLLECTION_NAME, uid));
   if (!snapshot.exists()) {
     return null;
   }

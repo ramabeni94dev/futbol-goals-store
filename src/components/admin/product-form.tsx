@@ -30,7 +30,8 @@ const productSchema = z.object({
   featured: z.boolean().default(false),
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+type ProductFormValues = z.input<typeof productSchema>;
+type ProductFormOutput = z.output<typeof productSchema>;
 
 function formatTechnicalSpecs(product?: Product) {
   return (
@@ -95,7 +96,7 @@ export function ProductForm({
     getValues,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<ProductFormValues>({
+  } = useForm<ProductFormValues, undefined, ProductFormOutput>({
     resolver: zodResolver(productSchema),
     defaultValues: getDefaultValues(product ?? undefined),
   });
@@ -129,7 +130,7 @@ export function ProductForm({
     }
   }
 
-  async function onSubmit(values: ProductFormValues) {
+  async function onSubmit(values: ProductFormOutput) {
     try {
       await upsertProduct({
         id: product?.id,

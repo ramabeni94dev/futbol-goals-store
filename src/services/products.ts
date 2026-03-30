@@ -40,13 +40,15 @@ function mapProduct(
 }
 
 export async function getProducts() {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     return demoProducts;
   }
 
   try {
     const snapshot = await getDocs(
-      query(collection(db, COLLECTION_NAME), orderBy("createdAt", "desc")),
+      query(collection(database, COLLECTION_NAME), orderBy("createdAt", "desc")),
     );
 
     if (snapshot.empty) {
@@ -73,11 +75,13 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function getProductById(productId: string) {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     return demoProducts.find((product) => product.id === productId) ?? null;
   }
 
-  const snapshot = await getDoc(doc(db, COLLECTION_NAME, productId));
+  const snapshot = await getDoc(doc(database, COLLECTION_NAME, productId));
   if (!snapshot.exists()) {
     return null;
   }
@@ -86,13 +90,15 @@ export async function getProductById(productId: string) {
 }
 
 export async function upsertProduct(product: ProductInput) {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     throw new Error("Firebase no esta configurado. Carga las variables de entorno.");
   }
 
   if (product.id) {
     const { id, ...data } = product;
-    await updateDoc(doc(db, COLLECTION_NAME, id), {
+    await updateDoc(doc(database, COLLECTION_NAME, id), {
       ...data,
       updatedAt: serverTimestamp(),
     });
@@ -100,7 +106,7 @@ export async function upsertProduct(product: ProductInput) {
     return id;
   }
 
-  const productRef = await addDoc(collection(db, COLLECTION_NAME), {
+  const productRef = await addDoc(collection(database, COLLECTION_NAME), {
     ...product,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -110,26 +116,30 @@ export async function upsertProduct(product: ProductInput) {
 }
 
 export async function removeProduct(productId: string) {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     throw new Error("Firebase no esta configurado. Carga las variables de entorno.");
   }
 
-  await deleteDoc(doc(db, COLLECTION_NAME, productId));
+  await deleteDoc(doc(database, COLLECTION_NAME, productId));
 }
 
 export async function seedProducts() {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     throw new Error("Firebase no esta configurado. Carga las variables de entorno.");
   }
 
-  const existing = await getDocs(collection(db, COLLECTION_NAME));
+  const existing = await getDocs(collection(database, COLLECTION_NAME));
   if (!existing.empty) {
     return { created: 0, skipped: existing.size };
   }
 
   const createdIds = await Promise.all(
     demoProducts.map(async (product) =>
-      addDoc(collection(db, COLLECTION_NAME), {
+      addDoc(collection(database, COLLECTION_NAME), {
         name: product.name,
         slug: product.slug,
         description: product.description,

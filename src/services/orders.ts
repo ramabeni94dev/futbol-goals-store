@@ -34,11 +34,13 @@ function mapOrder(id: string, payload: Partial<Order> & { createdAt?: unknown })
 }
 
 export async function createOrder(order: OrderInput) {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     throw new Error("Firebase no esta configurado. Carga las variables de entorno.");
   }
 
-  const orderRef = await addDoc(collection(db, COLLECTION_NAME), {
+  const orderRef = await addDoc(collection(database, COLLECTION_NAME), {
     ...order,
     status: "pending",
     createdAt: serverTimestamp(),
@@ -48,13 +50,15 @@ export async function createOrder(order: OrderInput) {
 }
 
 export async function getOrdersByUser(userId: string) {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     return [];
   }
 
   const snapshot = await getDocs(
     query(
-      collection(db, COLLECTION_NAME),
+      collection(database, COLLECTION_NAME),
       where("userId", "==", userId),
       orderBy("createdAt", "desc"),
     ),
@@ -64,12 +68,14 @@ export async function getOrdersByUser(userId: string) {
 }
 
 export async function getAllOrders() {
-  if (!db) {
+  const database = db;
+
+  if (!database) {
     return [];
   }
 
   const snapshot = await getDocs(
-    query(collection(db, COLLECTION_NAME), orderBy("createdAt", "desc")),
+    query(collection(database, COLLECTION_NAME), orderBy("createdAt", "desc")),
   );
 
   return snapshot.docs.map((entry) => mapOrder(entry.id, entry.data() as Partial<Order>));
