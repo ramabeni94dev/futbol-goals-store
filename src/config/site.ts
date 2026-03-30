@@ -3,6 +3,7 @@ import { ProductCategory } from "@/types";
 export const siteConfig = {
   name: "Futbol Goals Store",
   shortName: "FGS",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   description:
     "Ecommerce especializado en arcos de futbol para clubes, entrenamientos y espacios recreativos.",
   supportEmail: "ventas@futbolgoalsstore.com",
@@ -10,6 +11,16 @@ export const siteConfig = {
     { href: "/", label: "Inicio" },
     { href: "/shop", label: "Tienda" },
     { href: "/account", label: "Mi cuenta" },
+  ],
+  trustLinks: [
+    { href: "/shipping", label: "Envios" },
+    { href: "/payments", label: "Medios de pago" },
+    { href: "/returns", label: "Cambios y devoluciones" },
+    { href: "/faq", label: "Preguntas frecuentes" },
+  ],
+  legalLinks: [
+    { href: "/terms", label: "Terminos y condiciones" },
+    { href: "/privacy", label: "Politica de privacidad" },
   ],
   categories: [
     {

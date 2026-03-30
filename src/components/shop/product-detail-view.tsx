@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { ChevronRight, ShieldCheck, Truck } from "lucide-react";
 
 import { AddToCartButton } from "@/components/shop/add-to-cart-button";
@@ -9,57 +6,9 @@ import { ProductGallery } from "@/components/shop/product-gallery";
 import { getCategoryLabel } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
 import { getAvailableStock } from "@/lib/inventory";
-import { getProductBySlug } from "@/services/products";
 import { Product } from "@/types";
 
-export function ProductDetailView({ slug }: { slug: string }) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadProduct() {
-      const response = await getProductBySlug(slug);
-
-      if (!ignore) {
-        setProduct(response);
-        setLoading(false);
-      }
-    }
-
-    void loadProduct();
-
-    return () => {
-      ignore = true;
-    };
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="page-shell section-shell">
-        <div className="surface-card p-8 text-sm text-muted">Cargando producto...</div>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return (
-      <div className="page-shell section-shell">
-        <div className="surface-card space-y-4 p-8">
-          <h1 className="text-3xl font-bold text-foreground">Producto no disponible</h1>
-          <p className="text-sm leading-7 text-muted">
-            No encontramos el producto solicitado. Puede que haya sido removido o que
-            el enlace ya no este vigente.
-          </p>
-          <Link href="/shop" className="text-sm font-semibold text-brand">
-            Volver a la tienda
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+export function ProductDetailView({ product }: { product: Product }) {
   const availableStock = getAvailableStock(product);
 
   return (
