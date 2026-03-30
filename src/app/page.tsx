@@ -103,9 +103,6 @@ export default function HomePage() {
         <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {siteConfig.categories.map((category) => (
             <article key={category.id} className="surface-card p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-                {category.id}
-              </p>
               <h3 className="mt-3 text-xl font-bold text-foreground">{category.label}</h3>
               <p className="mt-3 text-sm leading-7 text-muted">{category.description}</p>
             </article>

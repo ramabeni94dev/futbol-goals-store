@@ -3,12 +3,13 @@ import Link from "next/link";
 import { ArrowUpRight, ShieldCheck, PackageCheck } from "lucide-react";
 
 import { AddToCartButton } from "@/components/shop/add-to-cart-button";
+import { getCategoryLabel } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
 import { Product } from "@/types";
 
 export function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="surface-card overflow-hidden">
+    <article className="surface-card overflow-hidden transition duration-300 hover:-translate-y-1">
       <div className="relative h-64 overflow-hidden">
         <Image
           src={product.images[0]}
@@ -21,7 +22,9 @@ export function ProductCard({ product }: { product: Product }) {
 
       <div className="space-y-4 p-5">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-          <span className="rounded-full bg-brand/10 px-3 py-1 text-brand">{product.category}</span>
+          <span className="rounded-full bg-brand/10 px-3 py-1 text-brand">
+            {getCategoryLabel(product.category)}
+          </span>
           <span>{product.size}</span>
         </div>
 

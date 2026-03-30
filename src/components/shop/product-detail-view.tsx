@@ -6,6 +6,7 @@ import { ChevronRight, ShieldCheck, Truck } from "lucide-react";
 
 import { AddToCartButton } from "@/components/shop/add-to-cart-button";
 import { ProductGallery } from "@/components/shop/product-gallery";
+import { getCategoryLabel } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
 import { getProductBySlug } from "@/services/products";
 import { Product } from "@/types";
@@ -77,7 +78,9 @@ export function ProductDetailView({ slug }: { slug: string }) {
 
         <section className="surface-card p-6 sm:p-8">
           <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-            <span className="rounded-full bg-brand/10 px-3 py-1 text-brand">{product.category}</span>
+            <span className="rounded-full bg-brand/10 px-3 py-1 text-brand">
+              {getCategoryLabel(product.category)}
+            </span>
             <span className="rounded-full bg-background px-3 py-1">{product.size}</span>
           </div>
 

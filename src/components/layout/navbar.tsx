@@ -96,6 +96,24 @@ export function Navbar() {
             </div>
           )}
         </div>
+
+        <nav className="flex basis-full items-center gap-2 overflow-x-auto pb-1 md:hidden">
+          {siteConfig.navigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="shrink-0 rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-foreground"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            href="/shop"
+            className="shrink-0 rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-semibold text-brand"
+          >
+            Explorar arcos
+          </Link>
+        </nav>
       </div>
     </header>
   );

@@ -8,6 +8,7 @@ import { ProductForm } from "@/components/admin/product-form";
 import { useProducts } from "@/hooks/use-products";
 import { removeProduct, seedProducts } from "@/services/products";
 import { Product } from "@/types";
+import { getCategoryLabel } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
 
 export function AdminProductsManager() {
@@ -124,7 +125,9 @@ export function AdminProductsManager() {
                   <h2 className="text-lg font-bold text-foreground">{product.name}</h2>
                   <p className="mt-2 text-sm leading-7 text-muted">{product.shortDescription}</p>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-                    <span className="rounded-full bg-background px-3 py-1">{product.category}</span>
+                    <span className="rounded-full bg-background px-3 py-1">
+                      {getCategoryLabel(product.category)}
+                    </span>
                     <span className="rounded-full bg-background px-3 py-1">{product.size}</span>
                     <span className="rounded-full bg-background px-3 py-1">Stock {product.stock}</span>
                   </div>
