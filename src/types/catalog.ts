@@ -1,6 +1,14 @@
 export const productCategories = ["professional", "training", "kids", "mini"] as const;
+export const catalogSortOptions = [
+  "featured",
+  "price_asc",
+  "price_desc",
+  "name_asc",
+  "name_desc",
+] as const;
 
 export type ProductCategory = (typeof productCategories)[number];
+export type CatalogSortOption = (typeof catalogSortOptions)[number];
 export type CurrencyCode = "ARS";
 
 export interface TechnicalSpec {

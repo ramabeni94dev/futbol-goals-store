@@ -2,6 +2,8 @@ import { Metadata } from "next";
 
 import { ShopCatalog } from "@/components/shop/shop-catalog";
 import { siteConfig } from "@/config/site";
+import { getStorefrontCatalogPage } from "@/server/catalog";
+import { CatalogSortOption, ProductCategory } from "@/types";
 
 export const metadata: Metadata = {
   title: "Tienda de arcos de futbol",
@@ -24,6 +26,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ShopPage() {
-  return <ShopCatalog />;
+export default async function ShopPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const query =
+    typeof resolvedSearchParams.query === "string" ? resolvedSearchParams.query : "";
+  const category =
+    typeof resolvedSearchParams.category === "string"
+      ? (resolvedSearchParams.category as ProductCategory | "all")
+      : "all";
+  const sort =
+    typeof resolvedSearchParams.sort === "string"
+      ? (resolvedSearchParams.sort as CatalogSortOption)
+      : "featured";
+  const page =
+    typeof resolvedSearchParams.page === "string"
+      ? Number(resolvedSearchParams.page)
+      : 1;
+  const catalog = await getStorefrontCatalogPage({
+    query,
+    category,
+    sort,
+    page: Number.isFinite(page) ? page : 1,
+  });
+
+  return <ShopCatalog catalog={catalog} />;
 }
