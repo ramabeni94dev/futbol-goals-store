@@ -2,16 +2,24 @@
 
 import { createContext, ReactNode, useSyncExternalStore } from "react";
 
+import { getAvailableStock } from "@/lib/inventory";
 import { CartItem, Product } from "@/types";
+
+interface CartMutationResult {
+  ok: boolean;
+  quantity: number;
+  availableStock: number;
+  reason?: "out_of_stock" | "quantity_limit";
+}
 
 interface CartContextValue {
   items: CartItem[];
   itemCount: number;
   subtotal: number;
   total: number;
-  addItem: (product: Product, quantity?: number) => void;
+  addItem: (product: Product, quantity?: number) => CartMutationResult;
   removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  updateQuantity: (productId: string, quantity: number) => CartMutationResult;
   clearCart: () => void;
 }
 
@@ -84,6 +92,19 @@ function getServerSnapshot() {
   return emptyCart;
 }
 
+function buildCartMutationResult(
+  product: Product,
+  quantity: number,
+  reason?: CartMutationResult["reason"],
+): CartMutationResult {
+  return {
+    ok: !reason,
+    quantity,
+    availableStock: getAvailableStock(product),
+    reason,
+  };
+}
+
 export const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -95,8 +116,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   function addItem(product: Product, quantity = 1) {
     const currentItems = readCartSnapshot();
     const existingItem = currentItems.find((item) => item.product.id === product.id);
+    const availableStock = getAvailableStock(product);
+
+    if (product.trackInventory && availableStock <= 0) {
+      return buildCartMutationResult(product, existingItem?.quantity ?? 0, "out_of_stock");
+    }
 
     if (existingItem) {
+      const nextQuantity = existingItem.quantity + quantity;
+
+      if (product.trackInventory && nextQuantity > availableStock) {
+        writeCartSnapshot(
+          currentItems.map((item) =>
+            item.product.id === product.id
+              ? { ...item, quantity: availableStock }
+              : item,
+          ),
+        );
+
+        return buildCartMutationResult(product, availableStock, "quantity_limit");
+      }
+
       writeCartSnapshot(
         currentItems.map((item) =>
           item.product.id === product.id
@@ -104,10 +144,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : item,
         ),
       );
-      return;
+      return buildCartMutationResult(product, nextQuantity);
     }
 
-    writeCartSnapshot([...currentItems, { product, quantity }]);
+    const nextQuantity =
+      product.trackInventory && quantity > availableStock ? availableStock : quantity;
+
+    writeCartSnapshot([...currentItems, { product, quantity: nextQuantity }]);
+
+    if (product.trackInventory && nextQuantity < quantity) {
+      return buildCartMutationResult(product, nextQuantity, "quantity_limit");
+    }
+
+    return buildCartMutationResult(product, nextQuantity);
   }
 
   function removeItem(productId: string) {
@@ -115,9 +164,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   function updateQuantity(productId: string, quantity: number) {
+    const currentItem = readCartSnapshot().find((item) => item.product.id === productId);
+
+    if (!currentItem) {
+      return {
+        ok: false,
+        quantity: 0,
+        availableStock: 0,
+        reason: "out_of_stock" as const,
+      };
+    }
+
     if (quantity <= 0) {
       removeItem(productId);
-      return;
+      return buildCartMutationResult(currentItem.product, 0);
+    }
+
+    const availableStock = getAvailableStock(currentItem.product);
+
+    if (currentItem.product.trackInventory && quantity > availableStock) {
+      writeCartSnapshot(
+        readCartSnapshot().map((item) =>
+          item.product.id === productId ? { ...item, quantity: availableStock } : item,
+        ),
+      );
+
+      return buildCartMutationResult(currentItem.product, availableStock, "quantity_limit");
     }
 
     writeCartSnapshot(
@@ -125,6 +197,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         item.product.id === productId ? { ...item, quantity } : item,
       ),
     );
+
+    return buildCartMutationResult(currentItem.product, quantity);
   }
 
   function clearCart() {

@@ -3,12 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { formatCurrency } from "@/lib/format";
 import { useCart } from "@/hooks/use-cart";
+import { getAvailableStock } from "@/lib/inventory";
 
 export function CartPageView() {
   const { items, subtotal, total, itemCount, clearCart, removeItem, updateQuantity } = useCart();
+
+  function handleQuantityChange(productId: string, quantity: number) {
+    const result = updateQuantity(productId, quantity);
+
+    if (!result.ok && result.reason === "quantity_limit") {
+      toast.error(`Solo hay ${result.availableStock} unidades disponibles.`);
+    }
+  }
 
   if (!items.length) {
     return (
@@ -79,7 +89,7 @@ export function CartPageView() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-line bg-background px-2 py-2">
                   <button
                     type="button"
-                    onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                    onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
                     className="inline-flex size-8 items-center justify-center rounded-full bg-white"
                   >
                     <Minus className="size-4" />
@@ -87,12 +97,17 @@ export function CartPageView() {
                   <span className="min-w-8 text-center text-sm font-semibold">{item.quantity}</span>
                   <button
                     type="button"
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                    onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                    disabled={item.quantity >= getAvailableStock(item.product)}
                     className="inline-flex size-8 items-center justify-center rounded-full bg-white"
                   >
                     <Plus className="size-4" />
                   </button>
                 </div>
+
+                <p className="text-xs text-muted">
+                  Disponible: {getAvailableStock(item.product)} unidades
+                </p>
 
                 <p className="text-lg font-black text-foreground">
                   {formatCurrency(item.product.price * item.quantity)}

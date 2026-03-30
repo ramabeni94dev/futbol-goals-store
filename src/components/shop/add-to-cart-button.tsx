@@ -22,12 +22,17 @@ export function AddToCartButton({
     <Button
       fullWidth={fullWidth}
       onClick={() => {
-        if (availableStock <= 0) {
-          toast.error("No hay stock disponible para este producto.");
+        const result = addItem(product, 1);
+
+        if (!result.ok) {
+          const message =
+            result.reason === "quantity_limit"
+              ? `Solo hay ${result.availableStock} unidades disponibles.`
+              : "No hay stock disponible para este producto.";
+          toast.error(message);
           return;
         }
 
-        addItem(product, 1);
         toast.success(`${product.name} agregado al carrito.`);
       }}
       disabled={availableStock <= 0}

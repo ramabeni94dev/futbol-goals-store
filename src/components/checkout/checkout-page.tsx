@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
-import { createOrder } from "@/services/orders";
+import { createCheckoutOrder } from "@/services/checkout";
 import { checkoutRequestSchema } from "@/validators/checkout";
 
 const checkoutSchema = checkoutRequestSchema.omit({
@@ -74,8 +74,10 @@ function CheckoutInner() {
     }
 
     try {
-      const orderId = await createOrder({
-        userId: user.uid,
+      const token = await user.getIdToken();
+      const order = await createCheckoutOrder({
+        token,
+        payload: {
         customerName: values.customerName,
         customerEmail: values.customerEmail,
         items: items.map((item) => ({
@@ -88,10 +90,13 @@ function CheckoutInner() {
         province: values.province,
         postalCode: values.postalCode,
         notes: values.notes,
+        },
       });
 
       clearCart();
-      toast.success(`Orden ${orderId.slice(0, 8)} creada con estado pendiente.`);
+      toast.success(
+        `Orden ${order.orderId.slice(0, 8)} creada con stock reservado.`,
+      );
       router.replace("/account");
     } catch (error) {
       const message =
@@ -129,9 +134,9 @@ function CheckoutInner() {
           Confirmar compra
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-          El pedido se guarda con el modelo de dominio nuevo y queda asociado al
-          usuario autenticado. En la siguiente fase pasara por un flujo server-side
-          autoritativo.
+          El pedido se valida y se recalcula del lado del servidor. Solo se reserva
+          stock real y se rechazan cantidades o productos manipulados desde el
+          navegador.
         </p>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
