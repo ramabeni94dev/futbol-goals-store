@@ -4,6 +4,9 @@ import { createAuthoritativeOrder } from "@/server/orders/create-authoritative-o
 import { getErrorResponse } from "@/server/errors";
 import { logError } from "@/server/logger";
 import { requireAuthenticatedUser } from "@/server/auth";
+import { isMercadoPagoConfigured } from "@/server/env";
+import { initializeMercadoPagoCheckout } from "@/server/orders/initialize-mercado-pago-checkout";
+import { releaseOrderReservation } from "@/server/orders/release-order-reservation";
 import { CheckoutRequest } from "@/types";
 
 export async function POST(request: Request) {
@@ -13,6 +16,34 @@ export async function POST(request: Request) {
     const order = await createAuthoritativeOrder(payload, {
       userId: token.uid,
     });
+
+    if (isMercadoPagoConfigured()) {
+      try {
+        const paymentSession = await initializeMercadoPagoCheckout(order.orderId);
+
+        return NextResponse.json(
+          {
+            ok: true,
+            data: {
+              ...order,
+              paymentProvider: "mercado_pago",
+              paymentMethod: "checkout_pro",
+              preferenceId: paymentSession.preferenceId,
+              checkoutUrl: paymentSession.checkoutUrl,
+            },
+          },
+          { status: 201 },
+        );
+      } catch (paymentInitializationError) {
+        await releaseOrderReservation({
+          orderId: order.orderId,
+          paymentStatus: "failed",
+          reason: "No se pudo crear la preferencia de Mercado Pago y se libero la reserva.",
+        });
+
+        throw paymentInitializationError;
+      }
+    }
 
     return NextResponse.json(
       {

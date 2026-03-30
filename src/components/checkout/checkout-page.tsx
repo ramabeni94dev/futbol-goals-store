@@ -97,6 +97,12 @@ function CheckoutInner() {
       toast.success(
         `Orden ${order.orderId.slice(0, 8)} creada con stock reservado.`,
       );
+
+      if (order.checkoutUrl) {
+        window.location.assign(order.checkoutUrl);
+        return;
+      }
+
       router.replace("/account");
     } catch (error) {
       const message =
