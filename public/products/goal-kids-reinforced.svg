@@ -1,0 +1,17 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#173A57"/>
+  <rect x="80" y="80" width="1440" height="1040" rx="48" fill="url(#paint0_linear)"/>
+  <rect x="190" y="240" width="1220" height="720" rx="40" fill="#F7FBFF" fill-opacity="0.12"/>
+  <path d="M540 820V530H1060V820" stroke="#F8FBFF" stroke-width="28"/>
+  <path d="M600 820V590H1000V820" stroke="#7BD5FF" stroke-width="18" stroke-dasharray="18 18"/>
+  <circle cx="480" cy="420" r="54" fill="#F59E0B"/>
+  <circle cx="1120" cy="460" r="38" fill="#7BD5FF"/>
+  <text x="180" y="190" fill="#F8FBFF" font-family="Arial, sans-serif" font-size="80" font-weight="700">ARCO INFANTIL REFORZADO</text>
+  <text x="180" y="1030" fill="#DCEFFF" font-family="Arial, sans-serif" font-size="54">Seguro, liviano y listo para futbol formativo</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="800" y1="80" x2="800" y2="1120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#205B88"/>
+      <stop offset="1" stop-color="#1E4367"/>
+    </linearGradient>
+  </defs>
+</svg>

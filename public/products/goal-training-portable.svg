@@ -1,0 +1,16 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#31224B"/>
+  <rect x="80" y="80" width="1440" height="1040" rx="48" fill="url(#paint0_linear)"/>
+  <rect x="180" y="220" width="1240" height="760" rx="42" stroke="#F7F2FF" stroke-opacity="0.18" stroke-width="16"/>
+  <path d="M560 800V560H1040V800" stroke="#FAF5FF" stroke-width="28"/>
+  <path d="M610 800V610H990V800" stroke="#C084FC" stroke-width="18" stroke-dasharray="18 18"/>
+  <path d="M390 965L1210 315" stroke="#F6B34B" stroke-width="16" stroke-dasharray="20 22"/>
+  <text x="180" y="190" fill="#FAF5FF" font-family="Arial, sans-serif" font-size="80" font-weight="700">ARCO ENTRENAMIENTO DESARMABLE</text>
+  <text x="180" y="1030" fill="#EADAFE" font-family="Arial, sans-serif" font-size="54">Portable, rapido de armar y pensado para sesiones tecnicas</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="800" y1="80" x2="800" y2="1120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4C2F72"/>
+      <stop offset="1" stop-color="#2E1F48"/>
+    </linearGradient>
+  </defs>
+</svg>

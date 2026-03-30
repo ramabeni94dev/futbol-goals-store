@@ -1,0 +1,16 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#0E3D34"/>
+  <rect x="80" y="80" width="1440" height="1040" rx="48" fill="url(#paint0_linear)"/>
+  <rect x="190" y="230" width="1220" height="740" rx="40" stroke="#F4FBF8" stroke-opacity="0.2" stroke-width="16"/>
+  <path d="M520 820V510H1080V820" stroke="#F8FBF8" stroke-width="28"/>
+  <path d="M580 820V570H1020V820" stroke="#A7F3D0" stroke-width="18" stroke-dasharray="18 18"/>
+  <path d="M580 570H1020M580 620H1020M580 670H1020M580 720H1020M630 570V820M740 570V820M850 570V820M960 570V820" stroke="#F8FBF8" stroke-opacity="0.4" stroke-width="6"/>
+  <text x="180" y="190" fill="#F8FBF8" font-family="Arial, sans-serif" font-size="80" font-weight="700">ARCO PROFESIONAL CON RED</text>
+  <text x="180" y="1030" fill="#D2E8DF" font-family="Arial, sans-serif" font-size="54">Kit premium listo para instalar en clubes y predios</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="800" y1="80" x2="800" y2="1120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#156651"/>
+      <stop offset="1" stop-color="#0F4037"/>
+    </linearGradient>
+  </defs>
+</svg>

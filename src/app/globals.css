@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4efe3;
+  --foreground: #14211d;
+  --card: #fffef7;
+  --muted: #6d7a72;
+  --line: rgba(20, 33, 29, 0.12);
+  --brand: #205d3f;
+  --brand-strong: #0f3528;
+  --accent: #f59e0b;
+  --accent-soft: rgba(245, 158, 11, 0.16);
+  --surface-shadow: 0 20px 80px rgba(20, 33, 29, 0.12);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--line);
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 32%),
+    radial-gradient(circle at 85% 15%, rgba(32, 93, 63, 0.18), transparent 28%),
+    var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(32, 93, 63, 0.18);
+}
+
+.page-shell {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.section-shell {
+  @apply py-16 sm:py-20;
+}
+
+.surface-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 254, 247, 0.96));
+  box-shadow: var(--surface-shadow);
+  @apply rounded-[28px] border border-line/80;
+}
+
+.eyebrow {
+  @apply inline-flex items-center rounded-full border border-brand/20 bg-brand/8 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-brand;
+}
+
+.display-title {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: 0.04em;
+  @apply text-5xl uppercase leading-none sm:text-6xl lg:text-7xl;
 }

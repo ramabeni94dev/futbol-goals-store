@@ -1,0 +1,17 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#0F3528"/>
+  <rect x="80" y="80" width="1440" height="1040" rx="48" fill="url(#paint0_linear)"/>
+  <rect x="220" y="300" width="1160" height="620" rx="36" stroke="#EAF3ED" stroke-width="20"/>
+  <path d="M800 300V920" stroke="#EAF3ED" stroke-width="20"/>
+  <circle cx="800" cy="610" r="108" stroke="#EAF3ED" stroke-width="20"/>
+  <path d="M470 805V500H1130V805" stroke="#F8FBF8" stroke-width="28"/>
+  <path d="M530 805V560H1070V805" stroke="#F6B34B" stroke-width="18" stroke-dasharray="16 18"/>
+  <text x="180" y="190" fill="#F8FBF8" font-family="Arial, sans-serif" font-size="80" font-weight="700">ARCO 11 SOLDADO 3"</text>
+  <text x="180" y="1030" fill="#D2E3D8" font-family="Arial, sans-serif" font-size="54">Estructura profesional reforzada para cancha grande</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="800" y1="80" x2="800" y2="1120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E6D49"/>
+      <stop offset="1" stop-color="#174A34"/>
+    </linearGradient>
+  </defs>
+</svg>

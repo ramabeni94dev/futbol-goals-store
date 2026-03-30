@@ -1,0 +1,114 @@
+import { Product } from "@/types";
+
+export const demoProducts: Product[] = [
+  {
+    id: "goal-11-soldado-3",
+    name: 'Arco de Futbol 11 Soldado 3"',
+    slug: "arco-futbol-11-soldado-3",
+    description:
+      "Arco profesional de caño soldado de 3 pulgadas, pensado para canchas 11 y clubes que necesitan durabilidad, estabilidad y una presencia premium en el campo.",
+    shortDescription:
+      "Modelo profesional soldado con estructura reforzada y terminacion anticorrosiva.",
+    price: 1890000,
+    category: "professional",
+    size: "7,32 x 2,44 m",
+    stock: 6,
+    images: ["/products/goal-11-soldado-3.svg", "/products/stadium-angle.svg"],
+    featured: true,
+    technicalSpecs: [
+      { label: "Medidas", value: "7,32 x 2,44 m" },
+      { label: "Material", value: "Acero soldado de 3 pulgadas" },
+      { label: "Terminacion", value: "Pintura poliester horneada" },
+      { label: "Incluye", value: "Ganchos y tensores para red" },
+    ],
+    createdAt: "2026-03-30T12:00:00.000Z",
+  },
+  {
+    id: "arco-infantil-reforzado",
+    name: "Arco Infantil Reforzado",
+    slug: "arco-infantil-reforzado",
+    description:
+      "Pensado para escuelas y espacios recreativos. Ofrece una estructura resistente, facil traslado y una altura ideal para categorias formativas.",
+    shortDescription:
+      "Arco infantil de alta resistencia para iniciacion y espacios recreativos.",
+    price: 485000,
+    category: "kids",
+    size: "3 x 2 m",
+    stock: 15,
+    images: ["/products/goal-kids-reinforced.svg", "/products/goal-training-portable.svg"],
+    featured: true,
+    technicalSpecs: [
+      { label: "Medidas", value: "3 x 2 m" },
+      { label: "Material", value: "Acero liviano reforzado" },
+      { label: "Uso", value: "Escuelas, plazas y clubes de barrio" },
+      { label: "Movilidad", value: "Traslado sencillo entre canchas" },
+    ],
+    createdAt: "2026-03-29T12:00:00.000Z",
+  },
+  {
+    id: "arco-entrenamiento-desarmable",
+    name: "Arco de Entrenamiento Desarmable",
+    slug: "arco-entrenamiento-desarmable",
+    description:
+      "Ideal para tecnificacion, trabajo por estaciones y futbol amateur. Su sistema desarmable reduce tiempos de armado y mejora la logistica del entrenamiento.",
+    shortDescription:
+      "Arco portable y desarmable para practicas dinamicas y traslados frecuentes.",
+    price: 329000,
+    category: "training",
+    size: "2,40 x 1,60 m",
+    stock: 20,
+    images: ["/products/goal-training-portable.svg", "/products/training-session.svg"],
+    featured: false,
+    technicalSpecs: [
+      { label: "Medidas", value: "2,40 x 1,60 m" },
+      { label: "Sistema", value: "Encastre rapido con piezas numeradas" },
+      { label: "Peso", value: "18 kg por unidad" },
+      { label: "Incluye", value: "Bolso de traslado y estacas" },
+    ],
+    createdAt: "2026-03-28T12:00:00.000Z",
+  },
+  {
+    id: "arco-profesional-con-red",
+    name: "Arco Profesional con Red",
+    slug: "arco-profesional-con-red",
+    description:
+      "Kit profesional listo para instalar con red reforzada, estructura galvanizada y terminacion premium para predios, academias y canchas de alto uso.",
+    shortDescription:
+      "Solucion premium con red incluida para instalaciones deportivas exigentes.",
+    price: 1265000,
+    category: "professional",
+    size: "5 x 2 m",
+    stock: 8,
+    images: ["/products/goal-professional-net.svg", "/products/stadium-angle.svg"],
+    featured: true,
+    technicalSpecs: [
+      { label: "Medidas", value: "5 x 2 m" },
+      { label: "Red", value: "Polietileno de alta densidad" },
+      { label: "Acabado", value: "Galvanizado mas pintura electrostatica" },
+      { label: "Aplicacion", value: "Clubes, academias y canchas privadas" },
+    ],
+    createdAt: "2026-03-27T12:00:00.000Z",
+  },
+  {
+    id: "mini-arco-para-practica",
+    name: "Mini Arco para Practica",
+    slug: "mini-arco-para-practica",
+    description:
+      "Mini goal compacto para precision, trabajos de definicion y espacios reducidos. Ideal para jardines, quinchos y actividades indoor.",
+    shortDescription:
+      "Formato compacto para precision, backyard soccer y practicas indoor.",
+    price: 149000,
+    category: "mini",
+    size: "1,20 x 0,80 m",
+    stock: 30,
+    images: ["/products/goal-mini-practice.svg", "/products/training-session.svg"],
+    featured: false,
+    technicalSpecs: [
+      { label: "Medidas", value: "1,20 x 0,80 m" },
+      { label: "Material", value: "Tubular de acero con red liviana" },
+      { label: "Uso", value: "Practica individual e indoor" },
+      { label: "Montaje", value: "Armado rapido sin herramientas" },
+    ],
+    createdAt: "2026-03-26T12:00:00.000Z",
+  },
+];

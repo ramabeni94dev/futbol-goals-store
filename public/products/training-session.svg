@@ -1,0 +1,19 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#1F2937"/>
+  <rect x="100" y="100" width="1400" height="1000" rx="52" fill="url(#paint0_linear)"/>
+  <path d="M280 880H1320" stroke="#F3F4F6" stroke-opacity="0.3" stroke-width="14"/>
+  <path d="M440 840L640 560L820 760L1000 480L1180 760" stroke="#F59E0B" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="440" cy="840" r="18" fill="#F9FAFB"/>
+  <circle cx="640" cy="560" r="18" fill="#F9FAFB"/>
+  <circle cx="820" cy="760" r="18" fill="#F9FAFB"/>
+  <circle cx="1000" cy="480" r="18" fill="#F9FAFB"/>
+  <circle cx="1180" cy="760" r="18" fill="#F9FAFB"/>
+  <text x="180" y="210" fill="#F9FAFB" font-family="Arial, sans-serif" font-size="80" font-weight="700">SESION TECNICA</text>
+  <text x="180" y="1010" fill="#D1D5DB" font-family="Arial, sans-serif" font-size="54">Ideal para galerias secundarias y contexto de entrenamiento</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="800" y1="100" x2="800" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#27364A"/>
+      <stop offset="1" stop-color="#1B2433"/>
+    </linearGradient>
+  </defs>
+</svg>
