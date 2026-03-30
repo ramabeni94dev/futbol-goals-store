@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 
 import { getOrderByIdServer } from "@/repositories/server-orders-repository";
 import { requireAdminUser } from "@/server/auth";
+import {
+  sendOrderCancelledEmail,
+  sendOrderShippedEmail,
+  sendPaymentConfirmedEmail,
+} from "@/server/emails/notifications";
 import { getErrorResponse, NotFoundError } from "@/server/errors";
 import { logError } from "@/server/logger";
 import { updateOrderByAdmin } from "@/server/orders/update-order-by-admin";
@@ -46,6 +51,7 @@ export async function PATCH(
     const { token, profile } = await requireAdminUser(request);
     const { orderId } = await context.params;
     const payload = (await request.json()) as OrderStatusUpdateInput;
+    const previousOrder = await getOrderByIdServer(orderId);
 
     await updateOrderByAdmin({
       orderId,
@@ -55,6 +61,33 @@ export async function PATCH(
     });
 
     const order = await getOrderByIdServer(orderId);
+
+    if (
+      order &&
+      previousOrder &&
+      order.paymentStatus === "paid" &&
+      previousOrder.paymentStatus !== "paid"
+    ) {
+      await sendPaymentConfirmedEmail(order);
+    }
+
+    if (
+      order &&
+      previousOrder &&
+      order.fulfillmentStatus === "shipped" &&
+      previousOrder.fulfillmentStatus !== "shipped"
+    ) {
+      await sendOrderShippedEmail(order);
+    }
+
+    if (
+      order &&
+      previousOrder &&
+      (order.status === "cancelled" || order.paymentStatus === "cancelled") &&
+      order.status !== previousOrder.status
+    ) {
+      await sendOrderCancelledEmail(order);
+    }
 
     return NextResponse.json({
       ok: true,

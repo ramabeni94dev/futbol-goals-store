@@ -1,17 +1,26 @@
 import { NextResponse } from "next/server";
 
 import { createAuthoritativeOrder } from "@/server/orders/create-authoritative-order";
-import { getErrorResponse } from "@/server/errors";
+import { getErrorResponse, ValidationError } from "@/server/errors";
 import { logError } from "@/server/logger";
 import { requireAuthenticatedUser } from "@/server/auth";
 import { isMercadoPagoConfigured } from "@/server/env";
+import { sendOrderCreatedEmail } from "@/server/emails/notifications";
 import { initializeMercadoPagoCheckout } from "@/server/orders/initialize-mercado-pago-checkout";
 import { releaseOrderReservation } from "@/server/orders/release-order-reservation";
+import { getOrderByIdServer } from "@/repositories/server-orders-repository";
 import { CheckoutRequest } from "@/types";
 
 export async function POST(request: Request) {
   try {
     const { token } = await requireAuthenticatedUser(request);
+
+    if (!token.email_verified) {
+      throw new ValidationError(
+        "Debes verificar tu email antes de iniciar el checkout.",
+      );
+    }
+
     const payload = (await request.json()) as CheckoutRequest;
     const order = await createAuthoritativeOrder(payload, {
       userId: token.uid,
@@ -20,6 +29,11 @@ export async function POST(request: Request) {
     if (isMercadoPagoConfigured()) {
       try {
         const paymentSession = await initializeMercadoPagoCheckout(order.orderId);
+        const createdOrder = await getOrderByIdServer(order.orderId);
+
+        if (createdOrder) {
+          await sendOrderCreatedEmail(createdOrder, paymentSession.checkoutUrl);
+        }
 
         return NextResponse.json(
           {
@@ -43,6 +57,12 @@ export async function POST(request: Request) {
 
         throw paymentInitializationError;
       }
+    }
+
+    const createdOrder = await getOrderByIdServer(order.orderId);
+
+    if (createdOrder) {
+      await sendOrderCreatedEmail(createdOrder);
     }
 
     return NextResponse.json(

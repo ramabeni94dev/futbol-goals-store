@@ -47,7 +47,7 @@ export function RegisterForm() {
         email: values.email,
         password: values.password,
       });
-      toast.success("Cuenta creada correctamente.");
+      toast.success("Cuenta creada. Revisa tu email para verificar la direccion.");
       router.replace(redirect);
     } catch (error) {
       const message =
@@ -64,7 +64,8 @@ export function RegisterForm() {
       </h1>
       <p className="mt-3 text-sm leading-7 text-muted">
         Registra tu perfil para comprar mas rapido, guardar pedidos y acceder a tu
-        historial.
+        historial. Si te registras con email y contrasena, enviaremos una verificacion
+        antes de habilitar el checkout.
       </p>
 
       {!firebaseEnabled ? (

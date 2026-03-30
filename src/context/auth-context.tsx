@@ -8,10 +8,11 @@ import {
   loginWithEmail,
   loginWithGoogle,
   logoutUser,
+  requestEmailVerification,
   registerWithEmail,
   requestPasswordReset,
 } from "@/services/auth";
-import { getUserProfile } from "@/services/users";
+import { ensureUserProfile, getUserProfile } from "@/services/users";
 import { UserProfile } from "@/types";
 
 interface AuthContextValue {
@@ -20,10 +21,12 @@ interface AuthContextValue {
   loading: boolean;
   firebaseEnabled: boolean;
   isAdmin: boolean;
+  isEmailVerified: boolean;
   login: (input: { email: string; password: string }) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   register: (input: { name: string; email: string; password: string }) => Promise<void>;
   requestPasswordReset: (input: { email: string; continueUrl?: string }) => Promise<void>;
+  requestEmailVerification: () => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -49,6 +52,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         return;
       }
+
+      await ensureUserProfile({
+        uid: currentUser.uid,
+        name: currentUser.displayName ?? (currentUser.email?.split("@")[0] ?? "Cliente"),
+        email: currentUser.email ?? "",
+        emailVerified: currentUser.emailVerified,
+      });
 
       const currentProfile = await getUserProfile(currentUser.uid);
       setProfile(currentProfile);
@@ -93,6 +103,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await requestPasswordReset(input);
   }
 
+  async function sendEmailVerification() {
+    await requestEmailVerification();
+    await refreshProfile();
+  }
+
   async function logout() {
     await logoutUser();
     setProfile(null);
@@ -106,10 +121,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         firebaseEnabled,
         isAdmin: profile?.role === "admin",
+        isEmailVerified: Boolean(user?.emailVerified),
         login,
         loginWithGoogle: signInWithGoogle,
         register,
         requestPasswordReset: sendPasswordReset,
+        requestEmailVerification: sendEmailVerification,
         logout,
         refreshProfile,
       }}

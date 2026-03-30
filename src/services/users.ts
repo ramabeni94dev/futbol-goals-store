@@ -19,17 +19,29 @@ export async function ensureUserProfile(input: {
     throw new Error("Firebase no esta configurado. Carga las variables de entorno.");
   }
 
+  const reference = doc(database, COLLECTION_NAME, input.uid);
+  const snapshot = await getDoc(reference);
+
   await setDoc(
-    doc(database, COLLECTION_NAME, input.uid),
-    {
-      uid: input.uid,
-      name: input.name,
-      email: input.email,
-      role: input.role ?? "customer",
-      emailVerified: input.emailVerified ?? false,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    },
+    reference,
+    snapshot.exists()
+      ? {
+          uid: input.uid,
+          name: input.name,
+          email: input.email,
+          role: input.role ?? "customer",
+          emailVerified: input.emailVerified ?? false,
+          updatedAt: serverTimestamp(),
+        }
+      : {
+          uid: input.uid,
+          name: input.name,
+          email: input.email,
+          role: input.role ?? "customer",
+          emailVerified: input.emailVerified ?? false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
     { merge: true },
   );
 }

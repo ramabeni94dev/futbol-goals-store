@@ -8,8 +8,10 @@ import {
   validateMercadoPagoWebhookSignature,
 } from "@/server/payments/mercado-pago";
 import { getErrorResponse } from "@/server/errors";
+import { sendOrderCancelledEmail, sendPaymentConfirmedEmail } from "@/server/emails/notifications";
 import { logError, logInfo, logWarn } from "@/server/logger";
 import { reconcileMercadoPagoPayment } from "@/server/orders/reconcile-mercado-pago-payment";
+import { getOrderByIdServer } from "@/repositories/server-orders-repository";
 
 export async function POST(request: Request) {
   let body: Record<string, unknown> = {};
@@ -65,6 +67,21 @@ export async function POST(request: Request) {
       eventId,
       webhookEventType: topic,
     });
+
+    if (!result.duplicated) {
+      const order = await getOrderByIdServer(result.orderId);
+
+      if (order && result.paymentStatus === "paid") {
+        await sendPaymentConfirmedEmail(order);
+      }
+
+      if (
+        order &&
+        (result.orderStatus === "cancelled" || result.orderStatus === "payment_failed")
+      ) {
+        await sendOrderCancelledEmail(order);
+      }
+    }
 
     logInfo("mercado_pago.webhook.processed", result);
 

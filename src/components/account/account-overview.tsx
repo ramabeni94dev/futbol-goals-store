@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { formatCurrency, formatOrderDate } from "@/lib/format";
 import { getOrderStatusClassName, getOrderStatusLabel } from "@/lib/orders";
@@ -9,9 +10,10 @@ import { getOrdersByUser } from "@/services/orders";
 import { Order } from "@/types";
 
 export function AccountOverview() {
-  const { user, profile } = useAuth();
+  const { user, profile, requestEmailVerification } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [sendingVerification, setSendingVerification] = useState(false);
 
   useEffect(() => {
     async function loadOrders() {
@@ -31,6 +33,39 @@ export function AccountOverview() {
 
   return (
     <div className="page-shell section-shell space-y-8">
+      {user && !user.emailVerified ? (
+        <section className="surface-card flex flex-wrap items-center justify-between gap-4 border border-amber-200 bg-amber-50/90 p-6">
+          <div>
+            <span className="eyebrow">Verificacion pendiente</span>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-amber-900">
+              Debes verificar tu email para habilitar el checkout y recibir notificaciones
+              transaccionales completas.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                setSendingVerification(true);
+                await requestEmailVerification();
+                toast.success("Te reenviamos el email de verificacion.");
+              } catch (error) {
+                toast.error(
+                  error instanceof Error
+                    ? error.message
+                    : "No se pudo reenviar la verificacion.",
+                );
+              } finally {
+                setSendingVerification(false);
+              }
+            }}
+            className="rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-strong"
+          >
+            {sendingVerification ? "Enviando..." : "Reenviar verificacion"}
+          </button>
+        </section>
+      ) : null}
+
       <div className="surface-card grid gap-6 p-6 sm:grid-cols-[1.2fr_0.8fr] sm:p-8">
         <div>
           <span className="eyebrow">Mi cuenta</span>

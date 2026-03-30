@@ -1,7 +1,7 @@
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
+  reload,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -36,6 +36,30 @@ function getGoogleProvider() {
   return provider;
 }
 
+async function postAuthAction(path: string, input: {
+  token?: string;
+  body?: Record<string, unknown>;
+}) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(input.token ? { authorization: `Bearer ${input.token}` } : {}),
+    },
+    body: JSON.stringify(input.body ?? {}),
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json()) as {
+      error?: {
+        message?: string;
+      };
+    };
+
+    throw new Error(payload.error?.message ?? "No se pudo completar la accion.");
+  }
+}
+
 export async function loginWithEmail(input: { email: string; password: string }) {
   const authInstance = assertAuth();
   const credentials = await signInWithEmailAndPassword(
@@ -51,6 +75,7 @@ export async function loginWithEmail(input: { email: string; password: string })
       uid: credentials.user.uid,
       name: credentials.user.displayName ?? fallbackNameFromEmail(input.email),
       email: input.email,
+      emailVerified: credentials.user.emailVerified,
     });
   }
 
@@ -70,6 +95,7 @@ export async function loginWithGoogle() {
         credentials.user.displayName ??
         fallbackNameFromEmail(email || "usuario@gmail.com"),
       email,
+      emailVerified: credentials.user.emailVerified,
     });
   }
 
@@ -96,7 +122,16 @@ export async function registerWithEmail(input: {
     uid: credentials.user.uid,
     name: input.name,
     email: input.email,
+    emailVerified: credentials.user.emailVerified,
   });
+
+  try {
+    await postAuthAction("/api/auth/email-verification", {
+      token: await credentials.user.getIdToken(),
+    });
+  } catch (error) {
+    console.error("Unable to send verification email after registration", error);
+  }
 
   return credentials.user;
 }
@@ -110,15 +145,23 @@ export async function requestPasswordReset(input: {
   email: string;
   continueUrl?: string;
 }) {
-  const authInstance = assertAuth();
-  const continueUrl =
-    input.continueUrl ||
-    (typeof window !== "undefined"
-      ? `${window.location.origin}/login`
-      : "http://localhost:3000/login");
+  await postAuthAction("/api/auth/password-reset", {
+    body: {
+      email: input.email,
+    },
+  });
+}
 
-  await sendPasswordResetEmail(authInstance, input.email, {
-    url: continueUrl,
-    handleCodeInApp: false,
+export async function requestEmailVerification() {
+  const authInstance = assertAuth();
+  const currentUser = authInstance.currentUser;
+
+  if (!currentUser) {
+    throw new Error("Necesitas una sesion activa para reenviar la verificacion.");
+  }
+
+  await reload(currentUser);
+  await postAuthAction("/api/auth/email-verification", {
+    token: await currentUser.getIdToken(true),
   });
 }

@@ -109,6 +109,12 @@ function CheckoutInner() {
       return;
     }
 
+    if (!user.emailVerified) {
+      toast.error("Verifica tu email antes de continuar con el checkout.");
+      router.push("/account");
+      return;
+    }
+
     try {
       const token = await user.getIdToken();
       const order = await createCheckoutOrder({
@@ -179,6 +185,12 @@ function CheckoutInner() {
           stock real y se rechazan cantidades o productos manipulados desde el
           navegador.
         </p>
+        {!user?.emailVerified ? (
+          <div className="mt-6 rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Verifica tu email desde tu cuenta para habilitar el cobro y la confirmacion
+            del pedido.
+          </div>
+        ) : null}
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-5 sm:grid-cols-2">

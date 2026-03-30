@@ -25,6 +25,9 @@ export const serverEnv = {
   mercadoPagoFailureUrl:
     readEnv("MERCADO_PAGO_FAILURE_URL") ||
     `${readEnv("NEXT_PUBLIC_SITE_URL") || readEnv("APP_URL") || "http://localhost:3000"}/checkout`,
+  resendApiKey: readEnv("RESEND_API_KEY"),
+  emailFrom: readEnv("EMAIL_FROM"),
+  emailReplyTo: readEnv("EMAIL_REPLY_TO"),
 };
 
 export function isFirebaseAdminConfigured() {
@@ -37,4 +40,8 @@ export function isFirebaseAdminConfigured() {
 
 export function isMercadoPagoConfigured() {
   return Boolean(serverEnv.mercadoPagoAccessToken);
+}
+
+export function isEmailServiceConfigured() {
+  return Boolean(serverEnv.resendApiKey && serverEnv.emailFrom);
 }

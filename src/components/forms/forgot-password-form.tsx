@@ -56,9 +56,9 @@ export function ForgotPasswordForm() {
         Restablecer contrasena
       </h1>
       <p className="mt-3 text-sm leading-7 text-muted">
-        Ingresa tu email y enviaremos un correo de recuperacion con Firebase Auth.
-        La plantilla y el remitente pueden personalizarse desde Firebase Console para
-        darle una presentacion mas profesional.
+        Ingresa tu email y enviaremos un correo de recuperacion con una plantilla
+        transaccional mas profesional. El enlace final sigue estando protegido por
+        Firebase Authentication.
       </p>
 
       {!firebaseEnabled ? (
