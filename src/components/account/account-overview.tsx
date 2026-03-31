@@ -3,10 +3,15 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { formatCurrency, formatOrderDate } from "@/lib/format";
-import { getOrderStatusClassName, getOrderStatusLabel } from "@/lib/orders";
+import {
+  canResumeOrderPayment,
+  getOrderStatusClassName,
+  getOrderStatusLabel,
+} from "@/lib/orders";
 import { useAuth } from "@/hooks/use-auth";
-import { getOrdersByUser } from "@/services/orders";
+import { getOrdersByUser, resumeOrderPayment } from "@/services/orders";
 import { Order } from "@/types";
 
 export function AccountOverview() {
@@ -14,6 +19,7 @@ export function AccountOverview() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [sendingVerification, setSendingVerification] = useState(false);
+  const [resumingOrderId, setResumingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadOrders() {
@@ -139,7 +145,36 @@ export function AccountOverview() {
                 </div>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
                   <span>{order.items.length} items</span>
-                  <span className="font-bold text-foreground">{formatCurrency(order.total)}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-foreground">{formatCurrency(order.total)}</span>
+                    {user && canResumeOrderPayment(order) ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        loading={resumingOrderId === order.id}
+                        onClick={async () => {
+                          try {
+                            setResumingOrderId(order.id);
+                            const paymentSession = await resumeOrderPayment({
+                              token: await user.getIdToken(),
+                              orderId: order.id,
+                            });
+                            window.location.assign(paymentSession.checkoutUrl);
+                          } catch (error) {
+                            toast.error(
+                              error instanceof Error
+                                ? error.message
+                                : "No se pudo retomar el pago.",
+                            );
+                          } finally {
+                            setResumingOrderId(null);
+                          }
+                        }}
+                      >
+                        Continuar pago
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))}

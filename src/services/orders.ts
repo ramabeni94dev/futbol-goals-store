@@ -43,3 +43,38 @@ export async function getAllOrders() {
 
   return snapshot.docs.map((entry) => mapOrderRecord(entry.id, entry.data() as Partial<Order>));
 }
+
+export async function resumeOrderPayment(input: {
+  token: string;
+  orderId: string;
+}): Promise<{
+  preferenceId: string;
+  checkoutUrl: string;
+}> {
+  const response = await fetch(`/api/orders/${input.orderId}/payment`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${input.token}`,
+    },
+  });
+
+  const payload = (await response.json()) as {
+    ok: boolean;
+    data?: {
+      preferenceId: string;
+      checkoutUrl: string | null;
+    };
+    error?: {
+      message?: string;
+    };
+  };
+
+  if (!response.ok || !payload.ok || !payload.data?.checkoutUrl) {
+    throw new Error(payload.error?.message ?? "No se pudo retomar el pago.");
+  }
+
+  return {
+    preferenceId: payload.data.preferenceId,
+    checkoutUrl: payload.data.checkoutUrl,
+  };
+}

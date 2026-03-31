@@ -1,4 +1,4 @@
-import { FulfillmentStatus, OrderStatus, PaymentStatus } from "@/types";
+import { FulfillmentStatus, Order, OrderStatus, PaymentStatus } from "@/types";
 
 const orderStatusLabels: Record<OrderStatus, string> = {
   pending: "Pendiente",
@@ -127,4 +127,26 @@ export function normalizeFulfillmentStatus(
 
       return "unfulfilled";
   }
+}
+
+export function canResumeOrderPayment(
+  order: Pick<Order, "status" | "paymentStatus" | "inventoryReservation">,
+) {
+  if (order.paymentStatus === "paid") {
+    return false;
+  }
+
+  if (order.status !== "awaiting_payment") {
+    return false;
+  }
+
+  if (order.inventoryReservation?.status !== "reserved") {
+    return false;
+  }
+
+  if (!order.inventoryReservation.expiresAt) {
+    return true;
+  }
+
+  return new Date(order.inventoryReservation.expiresAt).getTime() > Date.now();
 }
