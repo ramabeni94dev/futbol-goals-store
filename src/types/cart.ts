@@ -7,5 +7,6 @@ export interface CartItem {
 
 export interface CartLineInput {
   productId: string;
+  slug?: string;
   quantity: number;
 }

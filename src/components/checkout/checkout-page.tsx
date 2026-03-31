@@ -124,6 +124,7 @@ function CheckoutInner() {
           customerEmail: values.customerEmail,
           items: items.map((item) => ({
             productId: item.product.id,
+            slug: item.product.slug,
             quantity: item.quantity,
           })),
           shippingMethod: values.shippingMethod,

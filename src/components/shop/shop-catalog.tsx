@@ -187,8 +187,11 @@ export function ShopCatalog({
         </>
       ) : (
         <div className="surface-card p-8 text-sm text-muted">
-          No encontramos productos con ese criterio. Prueba otra busqueda o cambia el
-          orden y la categoria seleccionada.
+          {catalog.totalItems === 0 && !catalog.query && catalog.category === "all" ? (
+            "El catalogo todavia no tiene productos publicados. Carga productos reales en Firestore o ejecuta el seed demo desde el panel admin."
+          ) : (
+            "No encontramos productos con ese criterio. Prueba otra busqueda o cambia el orden y la categoria seleccionada."
+          )}
         </div>
       )}
     </div>

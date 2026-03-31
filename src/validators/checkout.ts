@@ -12,6 +12,7 @@ const emptyStringToUndefined = (value: unknown) => {
 
 export const cartLineInputSchema = z.object({
   productId: z.string().trim().min(1, "El item no tiene producto valido."),
+  slug: z.string().trim().min(1, "El item no tiene slug valido.").optional(),
   quantity: z
     .number()
     .int("La cantidad debe ser un entero.")

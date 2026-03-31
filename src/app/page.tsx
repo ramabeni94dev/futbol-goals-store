@@ -4,11 +4,15 @@ import { ArrowRight, ShieldCheck, Truck, Trophy } from "lucide-react";
 import { ProductCard } from "@/components/shop/product-card";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { siteConfig } from "@/config/site";
-import { demoProducts } from "@/data/demo-products";
+import { listStorefrontProducts } from "@/server/catalog";
 
-const featuredProducts = demoProducts.filter((product) => product.featured).slice(0, 3);
+export const dynamic = "force-dynamic";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredProducts = (await listStorefrontProducts())
+    .filter((product) => product.featured)
+    .slice(0, 3);
+
   return (
     <div>
       <section className="page-shell section-shell">
@@ -86,11 +90,18 @@ export default function HomePage() {
           }
         />
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {featuredProducts.length ? (
+          <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-8 rounded-[28px] border border-dashed border-line bg-white/70 p-6 text-sm leading-7 text-muted">
+            El catalogo todavia no tiene productos publicados en Firestore. Cuando
+            cargues o siembres productos reales, apareceran aqui.
+          </div>
+        )}
       </section>
 
       <section className="page-shell section-shell">

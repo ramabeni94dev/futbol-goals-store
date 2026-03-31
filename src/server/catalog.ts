@@ -3,6 +3,7 @@ import "server-only";
 import { demoProducts } from "@/data/demo-products";
 import { listProductsServer } from "@/repositories/server-products-repository";
 import { isFirebaseAdminConfigured } from "@/server/env";
+import { logError } from "@/server/logger";
 import { CatalogSortOption, ProductCategory } from "@/types";
 
 export async function listStorefrontProducts() {
@@ -12,9 +13,12 @@ export async function listStorefrontProducts() {
 
   try {
     const products = await listProductsServer();
-    return products.length ? products.filter((product) => product.isActive) : demoProducts;
-  } catch {
-    return demoProducts.filter((product) => product.isActive);
+    return products.filter((product) => product.isActive);
+  } catch (error) {
+    logError("catalog.storefront.load_failed", {
+      message: error instanceof Error ? error.message : "Unknown catalog error",
+    });
+    return [];
   }
 }
 

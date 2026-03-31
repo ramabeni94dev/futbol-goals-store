@@ -1,6 +1,6 @@
 import "server-only";
 
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Firestore, Transaction } from "firebase-admin/firestore";
 
 import { canReserveProductStock, getAvailableStock } from "@/lib/inventory";
 import { mapProductRecord } from "@/lib/serializers/product";
@@ -31,6 +31,59 @@ function buildStatusHistoryEntry(input: {
   };
 }
 
+async function resolveCheckoutProduct(input: {
+  transaction: Transaction;
+  database: Firestore;
+  item: CheckoutRequest["items"][number];
+}) {
+  const productsCollection = input.database.collection("products");
+  const directReference = productsCollection.doc(input.item.productId);
+  const directSnapshot = await input.transaction.get(directReference);
+
+  if (directSnapshot.exists) {
+    return {
+      reference: directReference,
+      product: mapProductRecord(
+        directSnapshot.id,
+        directSnapshot.data() as Partial<Product>,
+      ),
+    };
+  }
+
+  if (input.item.slug) {
+    const slugSnapshot = await input.transaction.get(
+      productsCollection.where("slug", "==", input.item.slug).limit(1),
+    );
+
+    if (!slugSnapshot.empty) {
+      const resolvedEntry = slugSnapshot.docs[0];
+
+      logWarn("checkout.order.product_resolved_by_slug", {
+        requestedProductId: input.item.productId,
+        resolvedProductId: resolvedEntry.id,
+        slug: input.item.slug,
+      });
+
+      return {
+        reference: resolvedEntry.ref,
+        product: mapProductRecord(
+          resolvedEntry.id,
+          resolvedEntry.data() as Partial<Product>,
+        ),
+      };
+    }
+  }
+
+  throw new NotFoundError(
+    "Uno de los productos de tu carrito ya no existe o dejo de estar disponible. Actualiza el carrito y vuelve a intentarlo.",
+    {
+      productId: input.item.productId,
+      slug: input.item.slug ?? null,
+      staleCart: true,
+    },
+  );
+}
+
 export async function createAuthoritativeOrder(
   input: CheckoutRequest,
   context: {
@@ -55,46 +108,39 @@ export async function createAuthoritativeOrder(
   const shippingMethod = checkout.shippingMethod ?? "pickup";
 
   const transactionResult = await database.runTransaction(async (transaction) => {
-    const productReferences = checkout.items.map((item) =>
-      database.collection("products").doc(item.productId),
+    const orderItems = await Promise.all(
+      checkout.items.map(async (item) => {
+        const resolvedProduct = await resolveCheckoutProduct({
+          transaction,
+          database,
+          item,
+        });
+        const product = resolvedProduct.product;
+
+        if (!product.isActive) {
+          throw new ValidationError(
+            "Uno de los productos ya no esta disponible para la venta.",
+            {
+              productId: product.id,
+            },
+          );
+        }
+
+        if (!canReserveProductStock(product, item.quantity)) {
+          throw new ConflictError("No hay stock suficiente para completar la orden.", {
+            productId: product.id,
+            requestedQuantity: item.quantity,
+            availableStock: getAvailableStock(product),
+          });
+        }
+
+        return {
+          product,
+          quantity: item.quantity,
+          reference: resolvedProduct.reference,
+        };
+      }),
     );
-    const productSnapshots = await Promise.all(
-      productReferences.map((reference) => transaction.get(reference)),
-    );
-
-    const orderItems = checkout.items.map((item, index) => {
-      const productSnapshot = productSnapshots[index];
-
-      if (!productSnapshot.exists) {
-        throw new NotFoundError("Uno de los productos ya no existe.", {
-          productId: item.productId,
-        });
-      }
-
-      const product = mapProductRecord(
-        productSnapshot.id,
-        productSnapshot.data() as Partial<Product>,
-      );
-
-      if (!product.isActive) {
-        throw new ValidationError("Uno de los productos ya no esta disponible para la venta.", {
-          productId: product.id,
-        });
-      }
-
-      if (!canReserveProductStock(product, item.quantity)) {
-        throw new ConflictError("No hay stock suficiente para completar la orden.", {
-          productId: product.id,
-          requestedQuantity: item.quantity,
-          availableStock: getAvailableStock(product),
-        });
-      }
-
-      return {
-        product,
-        quantity: item.quantity,
-      };
-    });
 
     const pricing = calculateOrderPricing({
       items: orderItems,
@@ -102,12 +148,12 @@ export async function createAuthoritativeOrder(
       couponCode: checkout.couponCode ?? null,
     });
 
-    orderItems.forEach(({ product, quantity }, index) => {
+    orderItems.forEach(({ product, quantity, reference }) => {
       if (!product.trackInventory) {
         return;
       }
 
-      transaction.update(productReferences[index], {
+      transaction.update(reference, {
         reservedStock: FieldValue.increment(quantity),
         updatedAt: FieldValue.serverTimestamp(),
       });
@@ -154,7 +200,10 @@ export async function createAuthoritativeOrder(
         releasedAt: null,
         consumedAt: null,
         expiresAt: reservationExpiresAt.toISOString(),
-        items: checkout.items,
+        items: orderItems.map(({ product, quantity }) => ({
+          productId: product.id,
+          quantity,
+        })),
       },
       trackingNumber: null,
       carrier: null,

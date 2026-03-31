@@ -8,6 +8,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
 } from "firebase/firestore";
 
@@ -30,14 +31,10 @@ export async function getProducts() {
       query(collection(database, COLLECTION_NAME), orderBy("createdAt", "desc")),
     );
 
-    if (snapshot.empty) {
-      return demoProducts;
-    }
-
     return snapshot.docs.map((entry) => mapProductRecord(entry.id, entry.data() as Partial<Product>));
   } catch (error) {
     console.error("Unable to load products from Firestore", error);
-    return demoProducts;
+    throw new Error("No se pudo cargar el catalogo real desde Firestore.");
   }
 }
 
@@ -121,8 +118,8 @@ export async function seedProducts() {
   }
 
   const createdIds = await Promise.all(
-    demoProducts.map(async (product) =>
-      addDoc(collection(database, COLLECTION_NAME), {
+    demoProducts.map(async (product) => {
+      await setDoc(doc(database, COLLECTION_NAME, product.id), {
         name: product.name,
         slug: product.slug,
         description: product.description,
@@ -139,8 +136,10 @@ export async function seedProducts() {
         isActive: product.isActive,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      }),
-    ),
+      });
+
+      return product.id;
+    }),
   );
 
   return {
