@@ -11,6 +11,7 @@ export const serverEnv = {
   firebaseAdminProjectId: readEnv("FIREBASE_ADMIN_PROJECT_ID"),
   firebaseAdminClientEmail: readEnv("FIREBASE_ADMIN_CLIENT_EMAIL"),
   firebaseAdminPrivateKey: readPrivateKey("FIREBASE_ADMIN_PRIVATE_KEY"),
+  firebaseAdminServiceAccountPath: readEnv("FIREBASE_ADMIN_SERVICE_ACCOUNT_PATH"),
   mercadoPagoAccessToken: readEnv("MERCADO_PAGO_ACCESS_TOKEN"),
   mercadoPagoWebhookSecret: readEnv("MERCADO_PAGO_WEBHOOK_SECRET"),
   mercadoPagoWebhookUrl:
@@ -31,11 +32,13 @@ export const serverEnv = {
 };
 
 export function isFirebaseAdminConfigured() {
-  return Boolean(
+  const hasInlineCredentials = Boolean(
     serverEnv.firebaseAdminProjectId &&
       serverEnv.firebaseAdminClientEmail &&
       serverEnv.firebaseAdminPrivateKey,
   );
+
+  return hasInlineCredentials || Boolean(serverEnv.firebaseAdminServiceAccountPath);
 }
 
 export function isMercadoPagoConfigured() {

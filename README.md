@@ -162,9 +162,15 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 FIREBASE_ADMIN_PROJECT_ID=
 FIREBASE_ADMIN_CLIENT_EMAIL=
 FIREBASE_ADMIN_PRIVATE_KEY=
+FIREBASE_ADMIN_SERVICE_ACCOUNT_PATH=
 ```
 
-Nota: `FIREBASE_ADMIN_PRIVATE_KEY` debe cargarse escapando saltos de linea como `\\n`.
+Puedes configurar Firebase Admin de dos formas:
+
+- inline, usando `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL` y `FIREBASE_ADMIN_PRIVATE_KEY`
+- por archivo, usando `FIREBASE_ADMIN_SERVICE_ACCOUNT_PATH` apuntando al JSON de la cuenta de servicio
+
+Si usas la opcion inline, `FIREBASE_ADMIN_PRIVATE_KEY` debe cargarse escapando saltos de linea como `\\n`.
 
 ### Mercado Pago
 
