@@ -238,6 +238,12 @@ firebase deploy --only firestore:rules,firestore:indexes,storage
 
 Sin estas variables, el checkout sigue creando ordenes seguras pero opera en modo manual.
 
+Nota para desarrollo local:
+
+- si trabajas en `localhost`, la app puede crear la preferencia y redirigir al checkout de Mercado Pago
+- `auto_return`, `back_urls` y `notification_url` se omiten automaticamente porque Mercado Pago requiere URLs publicas para esos callbacks
+- para probar retorno automatico y webhooks, usa un dominio publico temporal como `ngrok`
+
 ## Configuracion de emails
 
 1. Crear una API key en Resend.

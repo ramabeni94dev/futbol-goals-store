@@ -7,6 +7,7 @@ import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 
 import { serverEnv, isMercadoPagoConfigured } from "@/server/env";
 import { ValidationError } from "@/server/errors";
+import { logWarn } from "@/server/logger";
 import { Order } from "@/types";
 
 function getMercadoPagoClient() {
@@ -91,35 +92,131 @@ function buildMercadoPagoItems(order: Order) {
   return discountedItems;
 }
 
+function isPublicHttpUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase();
+
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return false;
+    }
+
+    return !["localhost", "127.0.0.1", "::1"].includes(hostname);
+  } catch {
+    return false;
+  }
+}
+
+function buildMercadoPagoRedirectConfig() {
+  const success = serverEnv.mercadoPagoSuccessUrl;
+  const pending = serverEnv.mercadoPagoPendingUrl;
+  const failure = serverEnv.mercadoPagoFailureUrl;
+
+  if ([success, pending, failure].every(isPublicHttpUrl)) {
+    return {
+      auto_return: "approved" as const,
+      back_urls: {
+        success,
+        pending,
+        failure,
+      },
+    };
+  }
+
+  logWarn("mercadopago.redirect_urls.skipped", {
+    success,
+    pending,
+    failure,
+    reason: "Mercado Pago requiere URLs publicas para auto_return y back_urls.",
+  });
+
+  return {};
+}
+
+function buildMercadoPagoWebhookConfig() {
+  if (isPublicHttpUrl(serverEnv.mercadoPagoWebhookUrl)) {
+    return {
+      notification_url: serverEnv.mercadoPagoWebhookUrl,
+    };
+  }
+
+  logWarn("mercadopago.webhook_url.skipped", {
+    notificationUrl: serverEnv.mercadoPagoWebhookUrl,
+    reason: "El webhook se omite porque la URL no es publica.",
+  });
+
+  return {};
+}
+
+function normalizeMercadoPagoError(error: unknown, orderId: string) {
+  if (error instanceof ValidationError) {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return new ValidationError(`Mercado Pago rechazo la preferencia de pago: ${error.message}`, {
+      orderId,
+      cause: error.cause ?? null,
+    });
+  }
+
+  if (typeof error === "object" && error !== null) {
+    const payload = error as {
+      message?: unknown;
+      error?: unknown;
+      status?: unknown;
+      cause?: unknown;
+    };
+
+    const message =
+      typeof payload.message === "string" && payload.message.trim().length
+        ? payload.message
+        : "Mercado Pago rechazo la preferencia de pago.";
+
+    return new ValidationError(message, {
+      orderId,
+      mercadoPagoError:
+        typeof payload.error === "string" ? payload.error : "unknown_mercado_pago_error",
+      status: typeof payload.status === "number" ? payload.status : null,
+      cause: payload.cause ?? null,
+    });
+  }
+
+  return new ValidationError("Mercado Pago rechazo la preferencia de pago.", {
+    orderId,
+  });
+}
+
 export async function createMercadoPagoPreference(order: Order) {
   const preferenceClient = new Preference(getMercadoPagoClient());
-  const response = await preferenceClient.create({
-    body: {
-      external_reference: order.id,
-      notification_url: serverEnv.mercadoPagoWebhookUrl,
-      auto_return: "approved",
-      back_urls: {
-        success: serverEnv.mercadoPagoSuccessUrl,
-        pending: serverEnv.mercadoPagoPendingUrl,
-        failure: serverEnv.mercadoPagoFailureUrl,
+  let response;
+
+  try {
+    response = await preferenceClient.create({
+      body: {
+        external_reference: order.id,
+        ...buildMercadoPagoWebhookConfig(),
+        ...buildMercadoPagoRedirectConfig(),
+        payer: {
+          name: order.customerName,
+          email: order.customerEmail,
+        },
+        items: buildMercadoPagoItems(order),
+        metadata: {
+          orderId: order.id,
+          userId: order.userId,
+          couponCode: order.couponCode,
+        },
+        statement_descriptor: "FUTBOL GOALS",
+        binary_mode: false,
       },
-      payer: {
-        name: order.customerName,
-        email: order.customerEmail,
+      requestOptions: {
+        idempotencyKey: `checkout_preference_${order.id}`,
       },
-      items: buildMercadoPagoItems(order),
-      metadata: {
-        orderId: order.id,
-        userId: order.userId,
-        couponCode: order.couponCode,
-      },
-      statement_descriptor: "FUTBOL GOALS",
-      binary_mode: false,
-    },
-    requestOptions: {
-      idempotencyKey: `checkout_preference_${order.id}`,
-    },
-  });
+    });
+  } catch (error) {
+    throw normalizeMercadoPagoError(error, order.id);
+  }
 
   if (!response.id || (!response.init_point && !response.sandbox_init_point)) {
     throw new ValidationError(
